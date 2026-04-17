@@ -1,3 +1,4 @@
+# Main dashboard/app
 {$DOMAIN:localhost} {
 	reverse_proxy app:3000
 
@@ -6,6 +7,19 @@
 	header {
 		X-Content-Type-Options "nosniff"
 		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}
+
+# Wildcard subdomains — route to published sites
+*.{$DOMAIN:localhost} {
+	reverse_proxy app:3000
+
+	encode gzip
+
+	header {
+		X-Content-Type-Options "nosniff"
 		Referrer-Policy "strict-origin-when-cross-origin"
 		-Server
 	}

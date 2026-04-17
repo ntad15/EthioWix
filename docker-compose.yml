@@ -6,6 +6,7 @@ services:
       - site-data:/app/.data
     environment:
       - NODE_ENV=production
+      - DOMAIN=${DOMAIN:-localhost}
     expose:
       - "3000"
 

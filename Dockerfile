@@ -23,14 +23,14 @@ ENV PORT=3000
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy standalone build output
-# Next.js standalone nests files under the WORKDIR path
-COPY --from=builder /app/.next/standalone/app ./
+# Copy the entire standalone output
+COPY --from=builder /app/.next/standalone ./
+# Copy static assets and public files
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
 # Create data directory for JSON file store
-RUN mkdir -p .data && chown nextjs:nodejs .data
+RUN mkdir -p .data && chown -R nextjs:nodejs .
 
 USER nextjs
 
