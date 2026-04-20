@@ -1,6 +1,6 @@
 import { SiteConfig } from "@/types/site-config";
 
-export const fineDiningTemplate: Omit<SiteConfig, "id" | "name" | "slug" | "createdAt" | "updatedAt"> = {
+export const fineDiningTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "slug" | "createdAt" | "updatedAt"> = {
   templateId: "fine-dining",
   published: false,
   theme: {

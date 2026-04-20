@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
+import { updateSession } from "@/lib/supabase/middleware";
 
-export function middleware(request: NextRequest) {
+const PUBLIC_PATHS = ["/sign-in", "/sign-up", "/auth/callback", "/sites/"];
+
+function isPublicPath(pathname: string): boolean {
+  return PUBLIC_PATHS.some((p) => pathname.startsWith(p));
+}
+
+export async function middleware(request: NextRequest) {
   const host = request.headers.get("host") ?? "";
   const domain = process.env.DOMAIN ?? "localhost";
 
-  // Extract subdomain: "azure.ethiowix.com" → "azure"
-  // Also handles "azure.localhost" for local testing
+  // --- Subdomain routing (always public) ---
   let subdomain: string | null = null;
 
   if (host.endsWith(`.${domain}`)) {
@@ -14,18 +20,27 @@ export function middleware(request: NextRequest) {
     subdomain = host.match(/^(.+)\.localhost/)![1].split(":")[0];
   }
 
-  // Skip if no subdomain, or if it's "www"
-  if (!subdomain || subdomain === "www") {
-    return NextResponse.next();
+  if (subdomain && subdomain !== "www") {
+    const url = request.nextUrl.clone();
+    url.pathname = `/sites/${subdomain}${url.pathname === "/" ? "" : url.pathname}`;
+    return NextResponse.rewrite(url);
   }
 
-  // Rewrite subdomain requests to /sites/{slug}
-  const url = request.nextUrl.clone();
-  url.pathname = `/sites/${subdomain}${url.pathname === "/" ? "" : url.pathname}`;
-  return NextResponse.rewrite(url);
+  // --- Supabase session refresh ---
+  const { user, supabaseResponse } = await updateSession(request);
+
+  // --- Auth protection for main domain ---
+  const { pathname } = request.nextUrl;
+
+  if (!user && !isPublicPath(pathname)) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/sign-in";
+    return NextResponse.redirect(url);
+  }
+
+  return supabaseResponse;
 }
 
 export const config = {
-  // Run on all paths except static assets and API routes from the main domain
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

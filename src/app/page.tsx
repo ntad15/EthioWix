@@ -2,31 +2,57 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { SiteConfig } from "@/types/site-config";
 import { templates } from "@/lib/templates";
-import { Plus, Globe, Edit, Trash2 } from "lucide-react";
+import { Plus, Globe, Edit, Trash2, LogOut } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
+import { Toast } from "@/components/ui/Toast";
+import { useRouter } from "next/navigation";
 
 export default function DashboardHome() {
   const [sites, setSites] = useState<SiteConfig[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUserEmail(user?.email ?? null);
+    });
+
     fetch("/api/sites")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load sites");
+        return res.json();
+      })
       .then((data) => {
         setSites(data);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
   }, []);
+
+  const handleSignOut = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/sign-in");
+    router.refresh();
+  };
 
   const handleCreateSite = async (templateId: string) => {
     const template = templates[templateId as keyof typeof templates];
     const now = new Date().toISOString();
     const newSite: SiteConfig = {
       id: uuidv4(),
+      userId: "",
       name: "My New Site",
       slug: `my-site-${Date.now()}`,
       templateId: template.config.templateId,
@@ -48,6 +74,9 @@ export default function DashboardHome() {
       setSites((prev) => [...prev, saved]);
       setShowCreateModal(false);
       window.location.href = `/builder?siteId=${saved.id}`;
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setToast({ message: data.error || "Failed to create site", type: "error" });
     }
   };
 
@@ -55,6 +84,9 @@ export default function DashboardHome() {
     const res = await fetch(`/api/sites?id=${id}`, { method: "DELETE" });
     if (res.ok) {
       setSites((prev) => prev.filter((s) => s.id !== id));
+      setToast({ message: "Site deleted", type: "success" });
+    } else {
+      setToast({ message: "Failed to delete site", type: "error" });
     }
   };
 
@@ -66,12 +98,24 @@ export default function DashboardHome() {
           <h1 className="text-2xl font-bold text-gray-900">
             Ethio<span className="text-blue-600">Wix</span>
           </h1>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-          >
-            <Plus size={16} /> New Site
-          </button>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            >
+              <Plus size={16} /> New Site
+            </button>
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <span>{userEmail}</span>
+              <button
+                onClick={handleSignOut}
+                className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                title="Sign out"
+              >
+                <LogOut size={16} />
+              </button>
+            </div>
+          </div>
         </div>
       </nav>
 
@@ -82,6 +126,16 @@ export default function DashboardHome() {
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+          </div>
+        ) : error ? (
+          <div className="rounded-xl border border-red-200 bg-red-50 p-8 text-center">
+            <p className="text-red-700">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+            >
+              Retry
+            </button>
           </div>
         ) : sites.length === 0 ? (
           <div className="rounded-xl border-2 border-dashed border-gray-300 p-16 text-center">
@@ -157,6 +211,14 @@ export default function DashboardHome() {
           </div>
         )}
       </main>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
 
       {/* Create Modal */}
       {showCreateModal && (

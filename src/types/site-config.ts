@@ -111,6 +111,7 @@ export const themeSchema = z.object({
 
 export const siteConfigSchema = z.object({
   id: z.string(),
+  userId: z.string(),
   name: z.string(),
   slug: z.string(),
   templateId: z.string(),

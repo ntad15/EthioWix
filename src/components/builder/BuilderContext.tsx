@@ -96,6 +96,7 @@ function createDefaultConfig(templateId: TemplateId = "fine-dining"): SiteConfig
   const now = new Date().toISOString();
   return {
     id: uuidv4(),
+    userId: "",
     name: "My Restaurant",
     slug: "my-restaurant",
     templateId: template.config.templateId,

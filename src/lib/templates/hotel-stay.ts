@@ -1,6 +1,6 @@
 import { SiteConfig } from "@/types/site-config";
 
-export const hotelStayTemplate: Omit<SiteConfig, "id" | "name" | "slug" | "createdAt" | "updatedAt"> = {
+export const hotelStayTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "slug" | "createdAt" | "updatedAt"> = {
   templateId: "hotel-stay",
   published: false,
   theme: {

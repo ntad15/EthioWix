@@ -1,60 +1,88 @@
 import { SiteConfig } from "@/types/site-config";
-import fs from "fs";
-import path from "path";
+import { createClient } from "@/lib/supabase/server";
 
-// Simple JSON file store for development.
-// Replace with Prisma/PostgreSQL for production.
-
-const DATA_DIR = path.join(process.cwd(), ".data");
-const SITES_FILE = path.join(DATA_DIR, "sites.json");
-
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
+// Maps DB row → SiteConfig
+function rowToConfig(row: Record<string, unknown>): SiteConfig {
+  return {
+    id: row.id as string,
+    userId: row.user_id as string,
+    name: row.name as string,
+    slug: row.slug as string,
+    templateId: row.template_id as string,
+    theme: row.theme as SiteConfig["theme"],
+    sections: row.sections as SiteConfig["sections"],
+    published: row.published as boolean,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
 }
 
-function readSites(): Record<string, SiteConfig> {
-  ensureDataDir();
-  if (!fs.existsSync(SITES_FILE)) {
-    return {};
-  }
-  const raw = fs.readFileSync(SITES_FILE, "utf-8");
-  return JSON.parse(raw);
+export async function getSitesByUserId(userId: string): Promise<SiteConfig[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("sites")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []).map(rowToConfig);
 }
 
-function writeSites(sites: Record<string, SiteConfig>) {
-  ensureDataDir();
-  fs.writeFileSync(SITES_FILE, JSON.stringify(sites, null, 2));
+export async function getSiteById(id: string): Promise<SiteConfig | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("sites")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error && error.code !== "PGRST116") throw error;
+  return data ? rowToConfig(data) : null;
 }
 
-export function getAllSites(): SiteConfig[] {
-  return Object.values(readSites());
+export async function getSiteBySlug(slug: string): Promise<SiteConfig | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("sites")
+    .select("*")
+    .eq("slug", slug)
+    .single();
+
+  if (error && error.code !== "PGRST116") throw error;
+  return data ? rowToConfig(data) : null;
 }
 
-export function getSiteById(id: string): SiteConfig | null {
-  const sites = readSites();
-  return sites[id] ?? null;
+export async function saveSite(config: SiteConfig): Promise<SiteConfig> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("sites")
+    .upsert({
+      id: config.id,
+      user_id: config.userId,
+      name: config.name,
+      slug: config.slug,
+      template_id: config.templateId,
+      theme: config.theme,
+      sections: config.sections,
+      published: config.published,
+      created_at: config.createdAt,
+      updated_at: new Date().toISOString(),
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return rowToConfig(data);
 }
 
-export function getSiteBySlug(slug: string): SiteConfig | null {
-  const sites = readSites();
-  return Object.values(sites).find((s) => s.slug === slug) ?? null;
-}
+export async function deleteSite(id: string): Promise<boolean> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("sites")
+    .delete()
+    .eq("id", id);
 
-export function saveSite(config: SiteConfig): SiteConfig {
-  const sites = readSites();
-  sites[config.id] = config;
-  writeSites(sites);
-  return config;
-}
-
-export function deleteSite(id: string): boolean {
-  const sites = readSites();
-  if (sites[id]) {
-    delete sites[id];
-    writeSites(sites);
-    return true;
-  }
-  return false;
+  if (error) throw error;
+  return true;
 }

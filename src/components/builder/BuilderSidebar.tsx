@@ -4,14 +4,26 @@ import { useBuilder } from "./BuilderContext";
 import { templates, TemplateId } from "@/lib/templates";
 import { Save, Globe, GlobeLock, Palette } from "lucide-react";
 import { useState } from "react";
+import { validateSlug } from "@/lib/utils/validation";
+import { Toast } from "@/components/ui/Toast";
 
 export function BuilderSidebar() {
   const { state, dispatch } = useBuilder();
   const { siteConfig, isDirty } = state;
   const [saving, setSaving] = useState(false);
+  const [slugError, setSlugError] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   const saveConfig = async (configOverride?: typeof siteConfig) => {
     const configToSave = configOverride ?? siteConfig;
+
+    const slugErr = validateSlug(configToSave.slug);
+    if (slugErr) {
+      setSlugError(slugErr);
+      setToast({ message: slugErr, type: "error" });
+      return;
+    }
+
     setSaving(true);
     try {
       const res = await fetch("/api/sites", {
@@ -21,7 +33,13 @@ export function BuilderSidebar() {
       });
       if (res.ok) {
         dispatch({ type: "MARK_SAVED" });
+        setToast({ message: "Site saved successfully", type: "success" });
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setToast({ message: data.error || "Failed to save", type: "error" });
       }
+    } catch {
+      setToast({ message: "Network error — could not save", type: "error" });
     } finally {
       setSaving(false);
     }
@@ -66,22 +84,27 @@ export function BuilderSidebar() {
         <label className="mb-1 block text-xs font-medium text-gray-600">
           URL Slug
         </label>
-        <div className="flex items-center rounded-lg border border-gray-300 px-3 py-2 text-sm">
+        <div className={`flex items-center rounded-lg border px-3 py-2 text-sm ${slugError ? "border-red-400" : "border-gray-300"}`}>
           <span className="text-gray-400">yourplatform.com/</span>
           <input
             className="flex-1 outline-none"
             value={siteConfig.slug}
-            onChange={(e) =>
+            onChange={(e) => {
+              const newSlug = e.target.value
+                .toLowerCase()
+                .replace(/[^a-z0-9-]/g, "-");
+              setSlugError(validateSlug(newSlug));
               dispatch({
                 type: "UPDATE_SITE_META",
                 name: siteConfig.name,
-                slug: e.target.value
-                  .toLowerCase()
-                  .replace(/[^a-z0-9-]/g, "-"),
-              })
-            }
+                slug: newSlug,
+              });
+            }}
           />
         </div>
+        {slugError && (
+          <p className="mt-1 text-xs text-red-500">{slugError}</p>
+        )}
       </div>
 
       {/* Template Switcher */}
@@ -166,6 +189,14 @@ export function BuilderSidebar() {
           {saving ? "Saving..." : isDirty ? "Save Changes" : "Saved"}
         </button>
       </div>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }
