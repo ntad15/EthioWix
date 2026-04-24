@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useReducer, ReactNode } from "react";
-import { SiteConfig, Section } from "@/types/site-config";
+import { SiteConfig, Section, SectionType, Theme, Animation, SectionStyleOverride } from "@/types/site-config";
 import { templates, TemplateId } from "@/lib/templates";
 import { v4 as uuidv4 } from "uuid";
 
@@ -14,8 +14,14 @@ interface BuilderState {
 type BuilderAction =
   | { type: "UPDATE_SECTION_DATA"; sectionId: string; data: Section["data"] }
   | { type: "REORDER_SECTIONS"; sections: Section[] }
+  | { type: "ADD_SECTION"; sectionType: SectionType }
+  | { type: "DELETE_SECTION"; sectionId: string }
+  | { type: "RENAME_SECTION"; sectionId: string; label: string }
+  | { type: "UPDATE_SECTION_STYLE"; sectionId: string; style: SectionStyleOverride }
   | { type: "SELECT_SECTION"; sectionId: string | null }
   | { type: "UPDATE_SITE_META"; name: string; slug: string }
+  | { type: "UPDATE_THEME"; theme: Partial<Theme> }
+  | { type: "UPDATE_ANIMATION"; animation: Animation }
   | { type: "SWITCH_TEMPLATE"; templateId: TemplateId }
   | { type: "TOGGLE_PUBLISH" }
   | { type: "MARK_SAVED" }
@@ -45,8 +51,79 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
           sections: action.sections,
         },
       };
+    case "ADD_SECTION": {
+      const newSection = createEmptySection(action.sectionType);
+      return {
+        ...state,
+        isDirty: true,
+        siteConfig: {
+          ...state.siteConfig,
+          updatedAt: new Date().toISOString(),
+          sections: [...state.siteConfig.sections, newSection],
+        },
+        selectedSectionId: newSection.id,
+      };
+    }
+    case "DELETE_SECTION":
+      return {
+        ...state,
+        isDirty: true,
+        selectedSectionId:
+          state.selectedSectionId === action.sectionId ? null : state.selectedSectionId,
+        siteConfig: {
+          ...state.siteConfig,
+          updatedAt: new Date().toISOString(),
+          sections: state.siteConfig.sections.filter((s) => s.id !== action.sectionId),
+        },
+      };
+    case "RENAME_SECTION":
+      return {
+        ...state,
+        isDirty: true,
+        siteConfig: {
+          ...state.siteConfig,
+          updatedAt: new Date().toISOString(),
+          sections: state.siteConfig.sections.map((s) =>
+            s.id === action.sectionId ? { ...s, label: action.label } : s
+          ) as Section[],
+        },
+      };
+    case "UPDATE_SECTION_STYLE":
+      return {
+        ...state,
+        isDirty: true,
+        siteConfig: {
+          ...state.siteConfig,
+          updatedAt: new Date().toISOString(),
+          sections: state.siteConfig.sections.map((s) =>
+            s.id === action.sectionId
+              ? { ...s, styleOverride: { ...(s.styleOverride ?? {}), ...action.style } }
+              : s
+          ) as Section[],
+        },
+      };
     case "SELECT_SECTION":
       return { ...state, selectedSectionId: action.sectionId };
+    case "UPDATE_THEME":
+      return {
+        ...state,
+        isDirty: true,
+        siteConfig: {
+          ...state.siteConfig,
+          theme: { ...state.siteConfig.theme, ...action.theme },
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    case "UPDATE_ANIMATION":
+      return {
+        ...state,
+        isDirty: true,
+        siteConfig: {
+          ...state.siteConfig,
+          animation: action.animation,
+          updatedAt: new Date().toISOString(),
+        },
+      };
     case "UPDATE_SITE_META":
       return {
         ...state,
@@ -91,17 +168,65 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
   }
 }
 
+function createEmptySection(type: SectionType): Section {
+  const id = uuidv4();
+  switch (type) {
+    case "nav":
+      return { type: "nav", id, data: { brandName: "My Site", links: [{ id: uuidv4(), label: "About", href: "#about" }, { id: uuidv4(), label: "Gallery", href: "#gallery" }, { id: uuidv4(), label: "Contact", href: "#contact" }] } };
+    case "hero":
+      return { type: "hero", id, data: { businessName: "Your Business", tagline: "Your tagline here", ctaText: "Get Started", ctaLink: "#contact", backgroundImage: "", overlay: true } };
+    case "about":
+      return { type: "about", id, data: { heading: "About Us", description: "Tell your story here...", logoImage: "" } };
+    case "gallery":
+      return { type: "gallery", id, data: { heading: "Gallery", images: [] } };
+    case "menu":
+      return { type: "menu", id, data: { heading: "Our Offerings", items: [] } };
+    case "hours":
+      return { type: "hours", id, data: { heading: "Hours & Location", address: "Your address", mapEmbedUrl: "", schedule: [{ day: "Monday - Friday", hours: "9:00 AM - 5:00 PM" }] } };
+    case "contact":
+      return { type: "contact", id, data: { heading: "Contact", phone: "", email: "", bookingUrl: "", bookingLabel: "Get in Touch" } };
+  }
+}
+
+function createDefaultNav(businessName: string): Section {
+  return {
+    type: "nav",
+    id: uuidv4(),
+    data: {
+      brandName: businessName,
+      links: [
+        { id: uuidv4(), label: "About", href: "#about" },
+        { id: uuidv4(), label: "Gallery", href: "#gallery" },
+        { id: uuidv4(), label: "Menu", href: "#menu" },
+        { id: uuidv4(), label: "Contact", href: "#contact" },
+      ],
+    },
+  };
+}
+
+export function addDefaultNav(sections: Section[], businessName: string): Section[] {
+  const hasNav = sections.some((s) => s.type === "nav");
+  if (hasNav) return sections;
+  return [createDefaultNav(businessName), ...sections];
+}
+
 function createDefaultConfig(templateId: TemplateId = "fine-dining"): SiteConfig {
   const template = templates[templateId];
   const now = new Date().toISOString();
+  const heroSection = template.config.sections.find((s) => s.type === "hero");
+  const businessName = heroSection?.data && "businessName" in heroSection.data
+    ? (heroSection.data as { businessName: string }).businessName
+    : "My Restaurant";
+
   return {
     id: uuidv4(),
     userId: "",
     name: "My Restaurant",
     slug: "my-restaurant",
+    animation: "none",
     templateId: template.config.templateId,
     theme: template.config.theme,
-    sections: template.config.sections,
+    sections: addDefaultNav(template.config.sections as Section[], businessName),
     published: false,
     createdAt: now,
     updatedAt: now,

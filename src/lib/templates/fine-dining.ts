@@ -1,6 +1,7 @@
 import { SiteConfig } from "@/types/site-config";
 
 export const fineDiningTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "slug" | "createdAt" | "updatedAt"> = {
+  animation: "none",
   templateId: "fine-dining",
   published: false,
   theme: {

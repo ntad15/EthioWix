@@ -20,7 +20,7 @@ export function MenuBlock({ section, theme, mode, onUpdate }: MenuBlockProps) {
 
   const handleItemChange = (
     itemId: string,
-    field: "name" | "description" | "price",
+    field: "name" | "description" | "price" | "image",
     value: string
   ) => {
     if (mode === "edit" && onUpdate) {
@@ -33,27 +33,33 @@ export function MenuBlock({ section, theme, mode, onUpdate }: MenuBlockProps) {
     }
   };
 
+  // Menu uses an inverted color scheme by default, but respects overrides
+  const sectionBg = theme.backgroundColor;
+  const sectionText = theme.textColor;
+  const headingColor = theme.headingColor ?? sectionText;
+  const headingSize = theme.fontSizeHeading ?? "2.5rem";
+
   return (
     <section
       id="menu"
       className="px-4 py-20"
       style={{
-        backgroundColor: theme.primaryColor,
-        color: theme.backgroundColor,
+        backgroundColor: sectionBg,
+        color: sectionText,
       }}
     >
       <div className="mx-auto max-w-6xl">
         {mode === "edit" ? (
           <input
-            className="mb-12 w-full bg-transparent text-center text-3xl font-bold outline-none md:text-4xl"
-            style={{ fontFamily: theme.fontHeading, color: theme.backgroundColor }}
+            className="mb-12 w-full bg-transparent text-center font-bold outline-none"
+            style={{ fontFamily: theme.fontHeading, color: headingColor, fontSize: headingSize }}
             value={data.heading}
             onChange={(e) => handleHeadingChange(e.target.value)}
           />
         ) : (
           <h2
-            className="mb-12 text-center text-3xl font-bold md:text-4xl"
-            style={{ fontFamily: theme.fontHeading }}
+            className="mb-12 text-center font-bold"
+            style={{ fontFamily: theme.fontHeading, color: headingColor, fontSize: headingSize }}
           >
             {data.heading}
           </h2>
@@ -70,13 +76,30 @@ export function MenuBlock({ section, theme, mode, onUpdate }: MenuBlockProps) {
                 borderRadius: theme.borderRadius,
               }}
             >
-              <div className="aspect-[4/3] overflow-hidden">
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="h-full w-full object-cover"
-                  loading="lazy"
-                />
+              <div className="group relative aspect-[4/3] overflow-hidden">
+                {item.image ? (
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-gray-200 text-sm text-gray-400">
+                    No image
+                  </div>
+                )}
+                {mode === "edit" && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                    <input
+                      className="w-4/5 rounded bg-white/90 px-2 py-1 text-xs text-gray-800 outline-none"
+                      placeholder="Paste image URL"
+                      value={item.image}
+                      onChange={(e) => handleItemChange(item.id, "image", e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                )}
               </div>
               <div className="p-5">
                 <div className="mb-2 flex items-start justify-between gap-2">

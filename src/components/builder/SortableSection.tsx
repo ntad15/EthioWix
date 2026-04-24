@@ -43,21 +43,20 @@ export function SortableSection({
     <div
       ref={setNodeRef}
       style={style}
+      data-section-id={section.id}
       className={`group relative ${
         isSelected ? "ring-2 ring-blue-500" : ""
       }`}
       onClick={onSelect}
     >
-      {/* Drag Handle + Label */}
-      <div className="absolute left-2 top-2 z-20 flex items-center gap-1 rounded bg-black/70 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
-        <button
-          className="cursor-grab touch-none active:cursor-grabbing"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical size={14} />
-        </button>
-        <span>{sectionLabel}</span>
+      {/* Drag Handle + Label — full bar is grabbable */}
+      <div
+        className="absolute left-3 top-3 z-20 flex cursor-grab items-center gap-2 rounded-lg bg-black/80 px-3 py-2 text-sm text-white shadow-lg opacity-0 transition-opacity group-hover:opacity-100 active:cursor-grabbing"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical size={16} />
+        <span className="font-medium">{sectionLabel}</span>
       </div>
 
       <SectionRenderer

@@ -6,6 +6,7 @@ create table if not exists sites (
   name text not null,
   slug text not null unique,
   template_id text not null,
+  animation text not null default 'none',
   theme jsonb not null,
   sections jsonb not null default '[]',
   published boolean not null default false,
@@ -44,3 +45,32 @@ create policy "Users can delete own sites"
 create policy "Anyone can read published sites"
   on sites for select
   using (published = true);
+
+-- === Supabase Storage: Image Uploads ===
+-- Create a public bucket for site images.
+-- Run this in the SQL Editor or configure via Supabase Dashboard > Storage.
+
+insert into storage.buckets (id, name, public)
+values ('site-images', 'site-images', true)
+on conflict (id) do nothing;
+
+-- Allow authenticated users to upload to their own site folder
+create policy "Users can upload to own site folder"
+  on storage.objects for insert
+  with check (
+    bucket_id = 'site-images' and
+    auth.role() = 'authenticated'
+  );
+
+-- Allow public read of all site images
+create policy "Public read site images"
+  on storage.objects for select
+  using (bucket_id = 'site-images');
+
+-- Allow users to delete their own uploads
+create policy "Users can delete own uploads"
+  on storage.objects for delete
+  using (
+    bucket_id = 'site-images' and
+    auth.role() = 'authenticated'
+  );

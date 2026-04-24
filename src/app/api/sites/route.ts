@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { getSitesByUserId, saveSite, getSiteBySlug, getSiteById, deleteSite } from "@/lib/db/site-store";
 import { siteConfigSchema } from "@/types/site-config";
 import { validateSlug } from "@/lib/utils/validation";
 
+const AUTH_DISABLED = process.env.NEXT_PUBLIC_AUTH_DISABLED === "true";
+
+// Dynamic import based on auth mode
+async function getStore() {
+  if (AUTH_DISABLED) {
+    return await import("@/lib/db/local-store");
+  }
+  return await import("@/lib/db/site-store");
+}
+
 async function getAuthUserId(): Promise<string | null> {
+  if (AUTH_DISABLED) return "local-dev-user";
+  const { createClient } = await import("@/lib/supabase/server");
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   return user?.id ?? null;
@@ -16,21 +26,22 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const store = await getStore();
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 
   if (id) {
-    const site = await getSiteById(id);
+    const site = await store.getSiteById(id);
     if (!site) {
       return NextResponse.json({ error: "Site not found" }, { status: 404 });
     }
-    if (site.userId !== userId) {
+    if (!AUTH_DISABLED && site.userId !== userId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
     return NextResponse.json(site);
   }
 
-  const sites = await getSitesByUserId(userId);
+  const sites = await store.getSitesByUserId(userId);
   return NextResponse.json(sites);
 }
 
@@ -40,6 +51,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const store = await getStore();
   const body = await request.json();
   body.userId = userId;
 
@@ -56,7 +68,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: slugError }, { status: 400 });
   }
 
-  const existing = await getSiteBySlug(parsed.data.slug);
+  const existing = await store.getSiteBySlug(parsed.data.slug);
   if (existing && existing.id !== parsed.data.id) {
     return NextResponse.json(
       { error: "A site with this slug already exists" },
@@ -64,12 +76,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const existingById = await getSiteById(parsed.data.id);
-  if (existingById && existingById.userId !== userId) {
+  const existingById = await store.getSiteById(parsed.data.id);
+  if (existingById && !AUTH_DISABLED && existingById.userId !== userId) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const saved = await saveSite(parsed.data);
+  const saved = await store.saveSite(parsed.data);
   return NextResponse.json(saved, { status: existingById ? 200 : 201 });
 }
 
@@ -79,6 +91,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const store = await getStore();
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 
@@ -86,14 +99,14 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Missing site id" }, { status: 400 });
   }
 
-  const site = await getSiteById(id);
+  const site = await store.getSiteById(id);
   if (!site) {
     return NextResponse.json({ error: "Site not found" }, { status: 404 });
   }
-  if (site.userId !== userId) {
+  if (!AUTH_DISABLED && site.userId !== userId) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  await deleteSite(id);
+  await store.deleteSite(id);
   return NextResponse.json({ success: true });
 }

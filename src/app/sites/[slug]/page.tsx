@@ -1,7 +1,18 @@
 import { Metadata } from "next";
-import { getSiteBySlug } from "@/lib/db/site-store";
 import { notFound } from "next/navigation";
 import { PublishedSite } from "@/components/PublishedSite";
+import { SiteConfig } from "@/types/site-config";
+
+const AUTH_DISABLED = process.env.NEXT_PUBLIC_AUTH_DISABLED === "true";
+
+async function getSite(slug: string): Promise<SiteConfig | null> {
+  if (AUTH_DISABLED) {
+    const { getSiteBySlug } = await import("@/lib/db/local-store");
+    return getSiteBySlug(slug);
+  }
+  const { getSiteBySlug } = await import("@/lib/db/site-store");
+  return getSiteBySlug(slug);
+}
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -9,7 +20,7 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const site = await getSiteBySlug(slug);
+  const site = await getSite(slug);
 
   if (!site || !site.published) {
     return { title: "Site Not Found" };
@@ -50,7 +61,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function SitePage({ params }: PageProps) {
   const { slug } = await params;
-  const site = await getSiteBySlug(slug);
+  const site = await getSite(slug);
 
   if (!site || !site.published) {
     notFound();

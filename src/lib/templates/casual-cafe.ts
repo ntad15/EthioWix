@@ -1,6 +1,7 @@
 import { SiteConfig } from "@/types/site-config";
 
 export const casualCafeTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "slug" | "createdAt" | "updatedAt"> = {
+  animation: "none",
   templateId: "casual-cafe",
   published: false,
   theme: {

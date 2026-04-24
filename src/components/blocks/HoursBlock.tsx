@@ -35,15 +35,15 @@ export function HoursBlock({ section, theme, mode, onUpdate }: HoursBlockProps) 
       <div className="mx-auto max-w-4xl">
         {mode === "edit" ? (
           <input
-            className="mb-12 w-full bg-transparent text-center text-3xl font-bold outline-none md:text-4xl"
-            style={{ fontFamily: theme.fontHeading, color: theme.textColor }}
+            className="mb-12 w-full bg-transparent text-center font-bold outline-none"
+            style={{ fontFamily: theme.fontHeading, color: theme.headingColor ?? theme.textColor, fontSize: theme.fontSizeHeading ?? "2.5rem" }}
             value={data.heading}
             onChange={(e) => handleChange("heading", e.target.value)}
           />
         ) : (
           <h2
-            className="mb-12 text-center text-3xl font-bold md:text-4xl"
-            style={{ fontFamily: theme.fontHeading }}
+            className="mb-12 text-center font-bold"
+            style={{ fontFamily: theme.fontHeading, color: theme.headingColor ?? theme.textColor, fontSize: theme.fontSizeHeading ?? "2.5rem" }}
           >
             {data.heading}
           </h2>

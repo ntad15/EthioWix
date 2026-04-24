@@ -1,7 +1,14 @@
 import { fineDiningTemplate } from "./fine-dining";
 import { casualCafeTemplate } from "./casual-cafe";
 import { hotelStayTemplate } from "./hotel-stay";
-
+import { habeshaSpaTemplate } from "./habesha-spa";
+import { roseClaySpaTemplate } from "./rose-clay-spa";
+import { enatStudioTemplate } from "./enat-studio";
+import { lensAndLightTemplate } from "./lens-and-light";
+import { addisStayTemplate } from "./addis-stay";
+import { saffronStayTemplate } from "./saffron-stay";
+import { lulitSalonTemplate } from "./lulit-salon";
+import { vintageBarberTemplate } from "./vintage-barber";
 export const templates = {
   "fine-dining": {
     id: "fine-dining",
@@ -23,6 +30,62 @@ export const templates = {
     description: "Luxurious and refined — built for hotels and resorts",
     preview: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=80",
     config: hotelStayTemplate,
+  },
+  "habesha-spa": {
+    id: "habesha-spa",
+    name: "Habesha Spa",
+    description: "Earthy and grounding — a coffee-ceremony spa aesthetic",
+    preview: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=400&q=80",
+    config: habeshaSpaTemplate,
+  },
+  "rose-clay-spa": {
+    id: "rose-clay-spa",
+    name: "Rose Clay Wellness",
+    description: "Soft and feminine — for boutique spas and wellness studios",
+    preview: "https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=400&q=80",
+    config: roseClaySpaTemplate,
+  },
+  "enat-studio": {
+    id: "enat-studio",
+    name: "Enat Studio",
+    description: "Minimal and editorial — a quiet photographer portfolio",
+    preview: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=80",
+    config: enatStudioTemplate,
+  },
+  "lens-and-light": {
+    id: "lens-and-light",
+    name: "Lens & Light",
+    description: "Warm and vintage — for film photographers and storytellers",
+    preview: "https://images.unsplash.com/photo-1452827073306-6e6e661baf57?w=400&q=80",
+    config: lensAndLightTemplate,
+  },
+  "addis-stay": {
+    id: "addis-stay",
+    name: "Addis Stay",
+    description: "Natural and calm — a boutique guesthouse feel",
+    preview: "https://images.unsplash.com/photo-1598928636135-d146006ff4be?w=400&q=80",
+    config: addisStayTemplate,
+  },
+  "saffron-stay": {
+    id: "saffron-stay",
+    name: "Saffron & Stone",
+    description: "Playful and colorful — for characterful B&Bs and hosts",
+    preview: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&q=80",
+    config: saffronStayTemplate,
+  },
+  "lulit-salon": {
+    id: "lulit-salon",
+    name: "Lulit Salon",
+    description: "Soft and modern — for salons and beauty studios",
+    preview: "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=400&q=80",
+    config: lulitSalonTemplate,
+  },
+  "vintage-barber": {
+    id: "vintage-barber",
+    name: "Vintage Barber",
+    description: "Classic and masculine — traditional barbershop style",
+    preview: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=400&q=80",
+    config: vintageBarberTemplate,
   },
 } as const;
 

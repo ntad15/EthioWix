@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { SiteConfig } from "@/types/site-config";
 import { templates } from "@/lib/templates";
 import { Plus, Globe, Edit, Trash2, LogOut } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { Toast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
+import { addDefaultNav } from "@/components/builder/BuilderContext";
+
+const AUTH_DISABLED = process.env.NEXT_PUBLIC_AUTH_DISABLED === "true";
 
 export default function DashboardHome() {
   const [sites, setSites] = useState<SiteConfig[]>([]);
@@ -20,10 +22,14 @@ export default function DashboardHome() {
   const router = useRouter();
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUserEmail(user?.email ?? null);
-    });
+    if (!AUTH_DISABLED) {
+      import("@/lib/supabase/client").then(({ createClient }) => {
+        const supabase = createClient();
+        supabase.auth.getUser().then(({ data: { user } }) => {
+          setUserEmail(user?.email ?? null);
+        });
+      });
+    }
 
     fetch("/api/sites")
       .then((res) => {
@@ -41,6 +47,8 @@ export default function DashboardHome() {
   }, []);
 
   const handleSignOut = async () => {
+    if (AUTH_DISABLED) return;
+    const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
     await supabase.auth.signOut();
     router.push("/sign-in");
@@ -55,9 +63,10 @@ export default function DashboardHome() {
       userId: "",
       name: "My New Site",
       slug: `my-site-${Date.now()}`,
+      animation: "none",
       templateId: template.config.templateId,
       theme: template.config.theme,
-      sections: template.config.sections,
+      sections: addDefaultNav(template.config.sections as SiteConfig["sections"], "My New Site"),
       published: false,
       createdAt: now,
       updatedAt: now,
@@ -105,16 +114,18 @@ export default function DashboardHome() {
             >
               <Plus size={16} /> New Site
             </button>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <span>{userEmail}</span>
-              <button
-                onClick={handleSignOut}
-                className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-                title="Sign out"
-              >
-                <LogOut size={16} />
-              </button>
-            </div>
+            {!AUTH_DISABLED && (
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <span>{userEmail}</span>
+                <button
+                  onClick={handleSignOut}
+                  className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                  title="Sign out"
+                >
+                  <LogOut size={16} />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </nav>

@@ -7,6 +7,8 @@ function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some((p) => pathname.startsWith(p));
 }
 
+const AUTH_DISABLED = process.env.NEXT_PUBLIC_AUTH_DISABLED === "true";
+
 export async function middleware(request: NextRequest) {
   const host = request.headers.get("host") ?? "";
   const domain = process.env.DOMAIN ?? "localhost";
@@ -24,6 +26,11 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = `/sites/${subdomain}${url.pathname === "/" ? "" : url.pathname}`;
     return NextResponse.rewrite(url);
+  }
+
+  // --- Skip auth entirely if disabled ---
+  if (AUTH_DISABLED) {
+    return NextResponse.next();
   }
 
   // --- Supabase session refresh ---
