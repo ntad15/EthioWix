@@ -1,9 +1,10 @@
 "use client";
 
 import { NavSection, Theme } from "@/types/site-config";
-import { Menu, X, Plus, Trash2, ImagePlus } from "lucide-react";
+import { Menu, X, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { ImagePicker } from "@/components/ui/ImagePicker";
 
 interface NavBlockProps {
   section: NavSection;
@@ -15,7 +16,6 @@ interface NavBlockProps {
 export function NavBlock({ section, theme, mode, onUpdate }: NavBlockProps) {
   const { data } = section;
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [logoEditorOpen, setLogoEditorOpen] = useState(false);
 
   const handleBrandChange = (value: string) => {
     if (onUpdate) onUpdate({ ...data, brandName: value });
@@ -64,58 +64,25 @@ export function NavBlock({ section, theme, mode, onUpdate }: NavBlockProps) {
       <div className="mx-auto flex max-w-6xl items-center justify-between">
         {/* Brand */}
         {mode === "edit" ? (
-          <div className="relative flex items-center gap-2">
-            {data.logoImage ? (
+          <div className="flex items-center gap-2">
+            {data.logoImage && (
               <img
                 src={data.logoImage}
                 alt="Logo"
                 className="h-8 w-8 rounded object-cover"
               />
-            ) : null}
-            <button
-              type="button"
-              onClick={() => setLogoEditorOpen((v) => !v)}
-              className="flex h-7 w-7 items-center justify-center rounded bg-white/20 hover:bg-white/30"
-              title={data.logoImage ? "Change logo" : "Add logo"}
-              aria-label={data.logoImage ? "Change logo" : "Add logo"}
-            >
-              <ImagePlus size={14} />
-            </button>
+            )}
+            <ImagePicker
+              value={data.logoImage ?? ""}
+              onChange={handleLogoChange}
+              label="logo"
+            />
             <input
               className="bg-transparent text-lg font-bold outline-none"
               style={{ fontFamily: theme.fontHeading, color: theme.backgroundColor }}
               value={data.brandName}
               onChange={(e) => handleBrandChange(e.target.value)}
             />
-            {logoEditorOpen && (
-              <div className="absolute left-0 top-full z-50 mt-2 flex w-72 flex-col gap-2 rounded-md bg-black/80 p-2 text-xs text-white shadow-lg">
-                <input
-                  autoFocus
-                  className="w-full rounded bg-white/90 px-2 py-1 text-gray-800 outline-none"
-                  placeholder="Paste logo image URL"
-                  value={data.logoImage ?? ""}
-                  onChange={(e) => handleLogoChange(e.target.value)}
-                />
-                <div className="flex justify-between">
-                  {data.logoImage ? (
-                    <button
-                      type="button"
-                      onClick={() => handleLogoChange("")}
-                      className="rounded bg-red-600 px-2 py-1 hover:bg-red-700"
-                    >
-                      Remove
-                    </button>
-                  ) : <span />}
-                  <button
-                    type="button"
-                    onClick={() => setLogoEditorOpen(false)}
-                    className="rounded bg-white/20 px-2 py-1 hover:bg-white/30"
-                  >
-                    Done
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         ) : (
           <a

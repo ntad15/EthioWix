@@ -3,6 +3,7 @@
 import { GallerySection, Theme } from "@/types/site-config";
 import { Plus, X } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
+import { ImagePicker } from "@/components/ui/ImagePicker";
 
 interface GalleryBlockProps {
   section: GallerySection;
@@ -98,12 +99,11 @@ export function GalleryBlock({ section, theme, mode, onUpdate }: GalleryBlockPro
               )}
               {mode === "edit" && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-                  <input
-                    className="w-4/5 rounded bg-white/90 px-2 py-1 text-xs text-gray-800 outline-none"
-                    placeholder="Paste image URL"
+                  <ImagePicker
                     value={image.src}
-                    onChange={(e) => handleImageChange(image.id, "src", e.target.value)}
-                    onClick={(e) => e.stopPropagation()}
+                    onChange={(url) => handleImageChange(image.id, "src", url)}
+                    label="image"
+                    variant="overlay"
                   />
                   <input
                     className="w-4/5 rounded bg-white/90 px-2 py-1 text-xs text-gray-800 outline-none"
@@ -116,7 +116,7 @@ export function GalleryBlock({ section, theme, mode, onUpdate }: GalleryBlockPro
                     onClick={(e) => { e.stopPropagation(); handleDeleteImage(image.id); }}
                     className="mt-1 flex items-center gap-1 rounded bg-red-600 px-2 py-1 text-xs text-white hover:bg-red-700"
                   >
-                    <X size={10} /> Remove
+                    <X size={10} /> Delete tile
                   </button>
                 </div>
               )}

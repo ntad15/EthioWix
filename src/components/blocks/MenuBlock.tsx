@@ -1,6 +1,7 @@
 "use client";
 
 import { MenuSection, Theme } from "@/types/site-config";
+import { ImagePicker } from "@/components/ui/ImagePicker";
 
 interface MenuBlockProps {
   section: MenuSection;
@@ -91,12 +92,11 @@ export function MenuBlock({ section, theme, mode, onUpdate }: MenuBlockProps) {
                 )}
                 {mode === "edit" && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-                    <input
-                      className="w-4/5 rounded bg-white/90 px-2 py-1 text-xs text-gray-800 outline-none"
-                      placeholder="Paste image URL"
+                    <ImagePicker
                       value={item.image}
-                      onChange={(e) => handleItemChange(item.id, "image", e.target.value)}
-                      onClick={(e) => e.stopPropagation()}
+                      onChange={(url) => handleItemChange(item.id, "image", url)}
+                      label="image"
+                      variant="overlay"
                     />
                   </div>
                 )}

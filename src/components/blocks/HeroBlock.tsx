@@ -1,8 +1,8 @@
 "use client";
 
 import { HeroSection, Theme } from "@/types/site-config";
-import { ImagePlus, Link2, X } from "lucide-react";
-import { useState } from "react";
+import { Link2 } from "lucide-react";
+import { ImagePicker } from "@/components/ui/ImagePicker";
 
 interface HeroBlockProps {
   section: HeroSection;
@@ -18,8 +18,6 @@ export function HeroBlock({ section, theme, mode, onUpdate }: HeroBlockProps) {
   // Use theme text color when there's no overlay, white when there is
   const contentColor = data.overlay ? "#ffffff" : theme.textColor;
   const titleColor = data.overlay ? "#ffffff" : headingColor;
-  const [imageEditorOpen, setImageEditorOpen] = useState(false);
-  const [logoEditorOpen, setLogoEditorOpen] = useState(false);
 
   const handleChange = (field: keyof HeroSection["data"], value: string) => {
     if (mode === "edit" && onUpdate) {
@@ -46,56 +44,22 @@ export function HeroBlock({ section, theme, mode, onUpdate }: HeroBlockProps) {
 
       {/* Edit-mode image control */}
       {mode === "edit" && (
-        <div className="absolute right-4 top-4 z-20">
-          <button
-            type="button"
-            onClick={() => setImageEditorOpen((v) => !v)}
-            className="flex items-center gap-1 rounded-md bg-black/60 px-2 py-1 text-xs text-white hover:bg-black/80"
-          >
-            <ImagePlus size={12} />
-            {data.backgroundImage ? "Change image" : "Add image"}
-          </button>
-          {imageEditorOpen && (
-            <div className="mt-2 flex w-72 flex-col gap-2 rounded-md bg-black/80 p-2 text-xs text-white shadow-lg">
-              <input
-                autoFocus
-                className="w-full rounded bg-white/90 px-2 py-1 text-gray-800 outline-none"
-                placeholder="Paste background image URL"
-                value={data.backgroundImage}
-                onChange={(e) => handleChange("backgroundImage", e.target.value)}
-              />
-              <div className="flex items-center justify-between">
-                <label className="flex items-center gap-1">
-                  <input
-                    type="checkbox"
-                    checked={data.overlay}
-                    onChange={(e) =>
-                      onUpdate && onUpdate({ ...data, overlay: e.target.checked })
-                    }
-                  />
-                  Dark overlay
-                </label>
-                <div className="flex gap-1">
-                  {data.backgroundImage && (
-                    <button
-                      type="button"
-                      onClick={() => handleChange("backgroundImage", "")}
-                      className="flex items-center gap-1 rounded bg-red-600 px-2 py-1 hover:bg-red-700"
-                    >
-                      <X size={10} /> Remove
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setImageEditorOpen(false)}
-                    className="rounded bg-white/20 px-2 py-1 hover:bg-white/30"
-                  >
-                    Done
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+        <div className="absolute right-4 top-4 z-20 flex flex-col items-end gap-2 rounded-md bg-black/60 p-2 text-xs text-white">
+          <ImagePicker
+            value={data.backgroundImage}
+            onChange={(url) => handleChange("backgroundImage", url)}
+            label="background"
+          />
+          <label className="flex items-center gap-1">
+            <input
+              type="checkbox"
+              checked={data.overlay}
+              onChange={(e) =>
+                onUpdate && onUpdate({ ...data, overlay: e.target.checked })
+              }
+            />
+            Dark overlay
+          </label>
         </div>
       )}
 
@@ -112,44 +76,12 @@ export function HeroBlock({ section, theme, mode, onUpdate }: HeroBlockProps) {
           </div>
         )}
         {mode === "edit" && (
-          <div className="relative mb-4 flex justify-center">
-            <button
-              type="button"
-              onClick={() => setLogoEditorOpen((v) => !v)}
-              className="flex items-center gap-1 rounded-md bg-black/60 px-2 py-1 text-xs text-white hover:bg-black/80"
-            >
-              <ImagePlus size={12} />
-              {data.logoImage ? "Change logo" : "Add logo"}
-            </button>
-            {logoEditorOpen && (
-              <div className="absolute top-full z-20 mt-2 flex w-72 flex-col gap-2 rounded-md bg-black/80 p-2 text-xs text-white shadow-lg">
-                <input
-                  autoFocus
-                  className="w-full rounded bg-white/90 px-2 py-1 text-gray-800 outline-none"
-                  placeholder="Paste logo image URL"
-                  value={data.logoImage ?? ""}
-                  onChange={(e) => handleChange("logoImage", e.target.value)}
-                />
-                <div className="flex justify-between">
-                  {data.logoImage ? (
-                    <button
-                      type="button"
-                      onClick={() => handleChange("logoImage", "")}
-                      className="flex items-center gap-1 rounded bg-red-600 px-2 py-1 hover:bg-red-700"
-                    >
-                      <X size={10} /> Remove
-                    </button>
-                  ) : <span />}
-                  <button
-                    type="button"
-                    onClick={() => setLogoEditorOpen(false)}
-                    className="rounded bg-white/20 px-2 py-1 hover:bg-white/30"
-                  >
-                    Done
-                  </button>
-                </div>
-              </div>
-            )}
+          <div className="mb-4 flex justify-center">
+            <ImagePicker
+              value={data.logoImage ?? ""}
+              onChange={(url) => handleChange("logoImage", url)}
+              label="logo"
+            />
           </div>
         )}
 
