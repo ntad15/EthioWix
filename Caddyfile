@@ -1,3 +1,10 @@
+# Global: on-demand TLS only for hosts our app permits via the ask endpoint
+{
+	on_demand_tls {
+		ask http://app:3000/api/internal/check-domain
+	}
+}
+
 # Main dashboard/app
 {$DOMAIN:localhost} {
 	reverse_proxy app:3000
@@ -12,8 +19,12 @@
 	}
 }
 
-# Wildcard subdomains — route to published sites
+# Wildcard subdomains — issue per-host certs on first request
 *.{$DOMAIN:localhost} {
+	tls {
+		on_demand
+	}
+
 	reverse_proxy app:3000
 
 	encode gzip
