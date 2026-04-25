@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "EthioWix — Dashboard",
+  title: "FetanSites — Dashboard",
   description: "Manage your hospitality website",
 };
 

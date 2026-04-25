@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "EthioWix — Website Builder for Hospitality",
+  title: "FetanSites — Website Builder for Hospitality",
   description: "Create beautiful websites for restaurants, cafés, and hotels — no coding required.",
 };
 

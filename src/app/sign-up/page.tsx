@@ -62,7 +62,7 @@ export default function SignUpPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-gray-900">
-            Ethio<span className="text-blue-600">Wix</span>
+            Fetan<span className="text-blue-600">Sites</span>
           </h1>
           <p className="mt-2 text-sm text-gray-500">Create your account</p>
         </div>

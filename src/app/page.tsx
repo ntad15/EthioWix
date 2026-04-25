@@ -105,7 +105,7 @@ export default function DashboardHome() {
       <nav className="border-b border-gray-200 bg-white px-6 py-4">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900">
-            Ethio<span className="text-blue-600">Wix</span>
+            Fetan<span className="text-blue-600">Sites</span>
           </h1>
           <div className="flex items-center gap-4">
             <button
