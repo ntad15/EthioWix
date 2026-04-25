@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { SiteConfig } from "@/types/site-config";
-import { templates } from "@/lib/templates";
-import { Plus, Globe, Edit, Trash2, LogOut } from "lucide-react";
+import { templates, CATEGORIES, type CategoryId } from "@/lib/templates";
+import { Plus, Globe, Edit, Trash2, LogOut, ArrowLeft } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { Toast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
@@ -16,6 +16,7 @@ export default function DashboardHome() {
   const [sites, setSites] = useState<SiteConfig[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryId | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -81,12 +82,22 @@ export default function DashboardHome() {
     if (res.ok) {
       const saved = await res.json();
       setSites((prev) => [...prev, saved]);
-      setShowCreateModal(false);
+      closeCreateModal();
       window.location.href = `/builder?siteId=${saved.id}`;
     } else {
       const data = await res.json().catch(() => ({}));
       setToast({ message: data.error || "Failed to create site", type: "error" });
     }
+  };
+
+  const openCreateModal = () => {
+    setSelectedCategory(null);
+    setShowCreateModal(true);
+  };
+
+  const closeCreateModal = () => {
+    setShowCreateModal(false);
+    setSelectedCategory(null);
   };
 
   const handleDeleteSite = async (id: string) => {
@@ -109,7 +120,7 @@ export default function DashboardHome() {
           </h1>
           <div className="flex items-center gap-4">
             <button
-              onClick={() => setShowCreateModal(true)}
+              onClick={openCreateModal}
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
             >
               <Plus size={16} /> New Site
@@ -160,7 +171,7 @@ export default function DashboardHome() {
               Create your first hospitality website in minutes
             </p>
             <button
-              onClick={() => setShowCreateModal(true)}
+              onClick={openCreateModal}
               className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700"
             >
               Create Your First Site
@@ -233,43 +244,104 @@ export default function DashboardHome() {
 
       {/* Create Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="mx-4 w-full max-w-2xl rounded-2xl bg-white p-6">
-            <h2 className="mb-2 text-xl font-bold text-gray-900">
-              Choose a Template
-            </h2>
-            <p className="mb-6 text-sm text-gray-500">
-              Pick a starting point — you can customize everything later
-            </p>
-            <div className="grid gap-4 sm:grid-cols-3">
-              {Object.entries(templates).map(([id, template]) => (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={closeCreateModal}
+        >
+          <div
+            className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-2xl bg-white"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-start gap-3 border-b border-gray-100 p-6">
+              {selectedCategory && (
                 <button
-                  key={id}
-                  onClick={() => handleCreateSite(id)}
-                  className="overflow-hidden rounded-xl border-2 border-gray-200 text-left transition-all hover:border-blue-500 hover:shadow-md"
+                  onClick={() => setSelectedCategory(null)}
+                  className="mt-0.5 rounded-md p-1 text-gray-500 hover:bg-gray-100"
+                  aria-label="Back to categories"
                 >
-                  <img
-                    src={template.preview}
-                    alt={template.name}
-                    className="aspect-[3/2] w-full object-cover"
-                  />
-                  <div className="p-3">
-                    <h3 className="font-semibold text-gray-900">
-                      {template.name}
-                    </h3>
-                    <p className="text-xs text-gray-500">
-                      {template.description}
-                    </p>
-                  </div>
+                  <ArrowLeft size={18} />
                 </button>
-              ))}
+              )}
+              <div className="flex-1">
+                <h2 className="text-xl font-bold text-gray-900">
+                  {selectedCategory
+                    ? `Choose a ${CATEGORIES.find((c) => c.id === selectedCategory)?.label} template`
+                    : "What kind of business is this for?"}
+                </h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  {selectedCategory
+                    ? "Pick a starting point — you can customize everything later"
+                    : "We'll show you templates designed for that industry"}
+                </p>
+              </div>
             </div>
-            <button
-              onClick={() => setShowCreateModal(false)}
-              className="mt-4 w-full rounded-lg border border-gray-300 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
-            >
-              Cancel
-            </button>
+
+            {/* Body — scrollable */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {!selectedCategory ? (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {CATEGORIES.map((cat) => {
+                    const count = Object.values(templates).filter(
+                      (t) => t.category === cat.id,
+                    ).length;
+                    return (
+                      <button
+                        key={cat.id}
+                        onClick={() => setSelectedCategory(cat.id)}
+                        className="flex items-center gap-3 rounded-xl border-2 border-gray-200 p-4 text-left transition-all hover:border-blue-500 hover:shadow-md"
+                      >
+                        <span className="text-2xl">{cat.emoji}</span>
+                        <span className="flex-1">
+                          <span className="block font-semibold text-gray-900">
+                            {cat.label}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {count} {count === 1 ? "template" : "templates"}
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-3">
+                  {Object.entries(templates)
+                    .filter(([, t]) => t.category === selectedCategory)
+                    .map(([id, template]) => (
+                      <button
+                        key={id}
+                        onClick={() => handleCreateSite(id)}
+                        className="overflow-hidden rounded-xl border-2 border-gray-200 text-left transition-all hover:border-blue-500 hover:shadow-md"
+                      >
+                        <img
+                          src={template.preview}
+                          alt={template.name}
+                          className="aspect-[3/2] w-full object-cover"
+                        />
+                        <div className="p-3">
+                          <h3 className="font-semibold text-gray-900">
+                            {template.name}
+                          </h3>
+                          <p className="text-xs text-gray-500">
+                            {template.description}
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-gray-100 p-4">
+              <button
+                onClick={closeCreateModal}
+                className="w-full rounded-lg border border-gray-300 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
