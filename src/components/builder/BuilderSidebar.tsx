@@ -47,7 +47,7 @@ function SidebarSortableItem({ section, isSelected, isEditing, onSelect, onRenam
       ref={setNodeRef}
       style={style}
       className={`group flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm transition-colors ${
-        isSelected ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-100"
+        isSelected ? "bg-brand-tint text-brand" : "text-gray-700 hover:bg-gray-100"
       }`}
     >
       <button className="cursor-grab touch-none text-gray-400 active:cursor-grabbing" {...attributes} {...listeners}>
@@ -56,7 +56,7 @@ function SidebarSortableItem({ section, isSelected, isEditing, onSelect, onRenam
       {isEditing ? (
         <input
           autoFocus
-          className="flex-1 rounded border border-blue-300 bg-white px-2 py-0.5 text-sm outline-none"
+          className="flex-1 rounded border border-brand/40 bg-white px-2 py-0.5 text-sm outline-none"
           defaultValue={displayLabel}
           onBlur={(e) => { const val = e.target.value.trim(); if (val && val !== displayLabel) onRename(val); setEditingLabel(null); }}
           onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); if (e.key === "Escape") setEditingLabel(null); }}
@@ -235,7 +235,7 @@ export function BuilderSidebar() {
     <div className="flex h-full w-80 flex-col border-r border-gray-200 bg-white">
       {/* Header */}
       <div className="border-b border-gray-200 p-4">
-        <h2 className="text-lg font-bold text-gray-900">Site Builder</h2>
+        <h2 className="font-serif text-lg font-semibold tracking-[-0.01em] text-gray-900">Site Builder</h2>
         <div className="mt-2 flex gap-1">
           {(["sections", "style", "settings"] as const).map((tab) => (
             <button
@@ -243,7 +243,7 @@ export function BuilderSidebar() {
               onClick={() => setActiveTab(tab)}
               className={`flex-1 rounded-md px-2 py-1.5 text-xs font-medium capitalize transition-colors ${
                 activeTab === tab
-                  ? "bg-blue-100 text-blue-700"
+                  ? "bg-brand-tint text-brand"
                   : "text-gray-500 hover:bg-gray-100"
               }`}
             >
@@ -262,7 +262,7 @@ export function BuilderSidebar() {
               <span className="text-xs font-medium text-gray-600">Sections</span>
               <button
                 onClick={() => setShowAddSection(!showAddSection)}
-                className="flex items-center gap-1 rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-100"
+                className="flex items-center gap-1 rounded-md bg-brand-tint px-2 py-1 text-xs font-medium text-brand hover:bg-brand-tint/70"
               >
                 <Plus size={12} /> Add
               </button>
@@ -317,7 +317,7 @@ export function BuilderSidebar() {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="w-full rounded-lg border border-dashed border-gray-300 px-3 py-3 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-600 disabled:opacity-50"
+                className="w-full rounded-lg border border-dashed border-gray-300 px-3 py-3 text-sm text-gray-500 hover:border-brand hover:text-brand disabled:opacity-50"
               >
                 {uploading ? "Uploading..." : "Click to upload — URL copied to clipboard"}
               </button>
@@ -387,7 +387,7 @@ export function BuilderSidebar() {
                         onClick={() => dispatch({ type: "UPDATE_ANIMATION", animation: value })}
                         className={`w-full rounded-lg border p-2 text-left text-sm transition-colors ${
                           siteConfig.animation === value
-                            ? "border-blue-500 bg-blue-50"
+                            ? "border-brand bg-brand-tint"
                             : "border-gray-200 hover:border-gray-300"
                         }`}
                       >
@@ -522,7 +522,7 @@ export function BuilderSidebar() {
             <div>
               <label className="mb-1 block text-xs font-medium text-gray-600">Site Name</label>
               <input
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand"
                 value={siteConfig.name}
                 onChange={(e) =>
                   dispatch({ type: "UPDATE_SITE_META", name: e.target.value, slug: siteConfig.slug })
@@ -568,7 +568,7 @@ export function BuilderSidebar() {
         <button
           onClick={handleSave}
           disabled={!isDirty || saving}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Save size={16} />
           {saving ? "Saving..." : isDirty ? "Save Changes" : "Saved"}

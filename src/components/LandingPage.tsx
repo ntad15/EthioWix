@@ -1,14 +1,5 @@
 import Link from "next/link";
 
-const ACCENT = "#1f6b3a";
-const INK = "#13161b";
-const MUTED = "#5e6470";
-const BORDER = "#e9e7e1";
-const BG = "#faf9f5";
-
-const sansFont = "var(--font-geist-sans), system-ui, sans-serif";
-const serifFont = "var(--font-fraunces), 'Times New Roman', serif";
-
 const TEMPLATE_HIGHLIGHTS: ReadonlyArray<readonly [string, string]> = [
   ["Fine Dining", "01"],
   ["Casual Café", "02"],
@@ -36,18 +27,10 @@ const STEPS: ReadonlyArray<{ n: string; t: string; d: string }> = [
   },
 ];
 
-function Wordmark({ size = 22 }: { size?: number }) {
+function Wordmark({ size = "text-[22px]" }: { size?: string }) {
   return (
-    <span
-      style={{
-        fontFamily: sansFont,
-        fontWeight: 700,
-        color: INK,
-        fontSize: size,
-        letterSpacing: "-0.01em",
-      }}
-    >
-      Fetan<span style={{ color: ACCENT }}>Sites</span>
+    <span className={`font-sans font-bold tracking-[-0.01em] text-ink ${size}`}>
+      Fetan<span className="text-brand">Sites</span>
     </span>
   );
 }
@@ -59,13 +42,13 @@ function TextileEdge() {
       height="14"
       viewBox="0 0 200 14"
       preserveAspectRatio="none"
-      style={{ display: "block", opacity: 0.45 }}
+      className="block opacity-45"
       aria-hidden
     >
       <defs>
         <pattern id="textile-edge" width="20" height="14" patternUnits="userSpaceOnUse">
-          <path d="M0 7 L10 0 L20 7 L10 14 Z" fill="none" stroke={ACCENT} strokeWidth="1" />
-          <circle cx="10" cy="7" r="1.2" fill={ACCENT} />
+          <path d="M0 7 L10 0 L20 7 L10 14 Z" fill="none" stroke="#1f6b3a" strokeWidth="1" />
+          <circle cx="10" cy="7" r="1.2" fill="#1f6b3a" />
         </pattern>
       </defs>
       <rect width="200" height="14" fill="url(#textile-edge)" />
@@ -75,46 +58,28 @@ function TextileEdge() {
 
 export function LandingPage() {
   return (
-    <div style={{ background: BG, color: INK, fontFamily: sansFont }} className="min-h-screen">
+    <div className="min-h-screen bg-cream font-sans text-ink">
       {/* Top nav */}
-      <nav
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "20px 56px",
-          borderBottom: `1px solid ${BORDER}`,
-          fontFamily: sansFont,
-        }}
-      >
+      <nav className="flex items-center justify-between border-b border-soft-border px-14 py-5">
         <Wordmark />
-        <div style={{ display: "flex", gap: 32, fontSize: 14, color: MUTED }}>
-          <Link href="#templates" style={{ color: MUTED, textDecoration: "none" }}>
+        <div className="flex gap-8 text-sm text-muted-ink">
+          <Link href="#templates" className="text-muted-ink no-underline">
             Templates
           </Link>
-          <Link href="#how-it-works" style={{ color: MUTED, textDecoration: "none" }}>
+          <Link href="#how-it-works" className="text-muted-ink no-underline">
             How it works
           </Link>
-          <Link href="#pricing" style={{ color: MUTED, textDecoration: "none" }}>
+          <Link href="#pricing" className="text-muted-ink no-underline">
             Pricing
           </Link>
         </div>
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <Link href="/sign-in" style={{ fontSize: 14, color: INK, textDecoration: "none" }}>
+        <div className="flex items-center gap-3">
+          <Link href="/sign-in" className="text-sm text-ink no-underline">
             Sign in
           </Link>
           <Link
             href="/sign-up"
-            style={{
-              fontSize: 14,
-              fontWeight: 600,
-              padding: "9px 16px",
-              background: ACCENT,
-              color: "#fff",
-              borderRadius: 10,
-              textDecoration: "none",
-              whiteSpace: "nowrap",
-            }}
+            className="whitespace-nowrap rounded-[10px] bg-brand px-4 py-[9px] text-sm font-semibold text-white no-underline hover:bg-brand-soft"
           >
             Create your site
           </Link>
@@ -122,91 +87,29 @@ export function LandingPage() {
       </nav>
 
       {/* Hero */}
-      <section style={{ padding: "120px 56px 80px" }}>
-        <div
-          style={{
-            maxWidth: 1100,
-            margin: "0 auto",
-            display: "grid",
-            gridTemplateColumns: "1fr 360px",
-            gap: 80,
-            alignItems: "start",
-          }}
-        >
+      <section className="px-14 pt-[120px] pb-20">
+        <div className="mx-auto grid max-w-[1100px] grid-cols-[1fr_360px] items-start gap-20">
           <div>
-            <div
-              style={{
-                fontSize: 12,
-                fontWeight: 600,
-                letterSpacing: "0.2em",
-                textTransform: "uppercase",
-                color: ACCENT,
-                marginBottom: 24,
-              }}
-            >
+            <div className="mb-6 text-xs font-semibold uppercase tracking-[0.2em] text-brand">
               · Issue 01 · Hospitality on the web
             </div>
-            <h1
-              style={{
-                fontFamily: serifFont,
-                fontSize: 96,
-                lineHeight: 0.98,
-                fontWeight: 400,
-                letterSpacing: "-0.025em",
-                color: INK,
-                marginBottom: 32,
-                textWrap: "balance",
-              }}
-            >
+            <h1 className="mb-8 font-serif text-[96px] font-normal leading-[0.98] tracking-[-0.025em] text-ink [text-wrap:balance]">
               Your business deserves a{" "}
-              <em
-                style={{
-                  fontStyle: "italic",
-                  fontWeight: 300,
-                  color: ACCENT,
-                }}
-              >
-                beautiful
-              </em>{" "}
-              website.
+              <em className="font-light italic text-brand">beautiful</em> website.
             </h1>
-            <p
-              style={{
-                fontSize: 19,
-                lineHeight: 1.6,
-                color: MUTED,
-                maxWidth: 540,
-                marginBottom: 40,
-              }}
-            >
+            <p className="mb-10 max-w-[540px] text-[19px] leading-[1.6] text-muted-ink">
               Beautiful websites for Ethiopian restaurants, cafés, and hotels — no code, ready in minutes.
             </p>
-            <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <div className="flex items-center gap-3">
               <Link
                 href="/sign-up"
-                style={{
-                  padding: "16px 28px",
-                  background: ACCENT,
-                  color: "#fff",
-                  borderRadius: 4,
-                  fontWeight: 600,
-                  fontSize: 15,
-                  textDecoration: "none",
-                  letterSpacing: "0.01em",
-                }}
+                className="rounded bg-brand px-7 py-4 text-[15px] font-semibold tracking-[0.01em] text-white no-underline hover:bg-brand-soft"
               >
                 Create your site
               </Link>
               <Link
                 href="#templates"
-                style={{
-                  fontSize: 15,
-                  color: INK,
-                  textDecoration: "none",
-                  fontWeight: 500,
-                  borderBottom: `1px solid ${INK}`,
-                  paddingBottom: 2,
-                }}
+                className="border-b border-ink pb-0.5 text-[15px] font-medium text-ink no-underline"
               >
                 See templates →
               </Link>
@@ -214,65 +117,23 @@ export function LandingPage() {
           </div>
 
           {/* Editorial side-card */}
-          <aside
-            style={{
-              border: `1px solid ${BORDER}`,
-              background: "#ffffff",
-              padding: 32,
-            }}
-          >
+          <aside className="border border-soft-border bg-white p-8">
             <TextileEdge />
-            <div
-              style={{
-                marginTop: 24,
-                fontSize: 12,
-                letterSpacing: "0.15em",
-                textTransform: "uppercase",
-                color: MUTED,
-                marginBottom: 16,
-              }}
-            >
+            <div className="mt-6 mb-4 text-xs uppercase tracking-[0.15em] text-muted-ink">
               In this template set
             </div>
-            <ul
-              style={{
-                listStyle: "none",
-                padding: 0,
-                margin: 0,
-                fontFamily: serifFont,
-                fontSize: 22,
-                lineHeight: 1.6,
-                color: INK,
-              }}
-            >
+            <ul className="m-0 list-none p-0 font-serif text-[22px] leading-[1.6] text-ink">
               {TEMPLATE_HIGHLIGHTS.map(([name, n]) => (
                 <li
                   key={n}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "baseline",
-                    padding: "6px 0",
-                    borderBottom: `1px dashed ${BORDER}`,
-                  }}
+                  className="flex items-baseline justify-between border-b border-dashed border-soft-border py-1.5"
                 >
                   <span>{name}</span>
-                  <span
-                    style={{
-                      fontFamily: sansFont,
-                      fontSize: 12,
-                      color: MUTED,
-                      letterSpacing: "0.1em",
-                    }}
-                  >
-                    {n}
-                  </span>
+                  <span className="font-sans text-xs tracking-[0.1em] text-muted-ink">{n}</span>
                 </li>
               ))}
             </ul>
-            <div style={{ marginTop: 16, fontFamily: sansFont, fontSize: 13, color: MUTED }}>
-              + 5 more
-            </div>
+            <div className="mt-4 font-sans text-[13px] text-muted-ink">+ 5 more</div>
           </aside>
         </div>
       </section>
@@ -280,75 +141,25 @@ export function LandingPage() {
       {/* How it works */}
       <section
         id="how-it-works"
-        style={{
-          padding: "96px 56px",
-          background: "#ffffff",
-          fontFamily: sansFont,
-          borderTop: `1px solid ${BORDER}`,
-        }}
+        className="border-t border-soft-border bg-white px-14 py-24 font-sans"
       >
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <div
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              letterSpacing: "0.18em",
-              textTransform: "uppercase",
-              color: ACCENT,
-              marginBottom: 16,
-            }}
-          >
+        <div className="mx-auto max-w-[1100px]">
+          <div className="mb-4 text-[13px] font-semibold uppercase tracking-[0.18em] text-brand">
             The method
           </div>
-          <h2
-            style={{
-              fontFamily: serifFont,
-              fontSize: 44,
-              lineHeight: 1.1,
-              color: INK,
-              fontWeight: 600,
-              letterSpacing: "-0.02em",
-              maxWidth: 720,
-              marginBottom: 64,
-            }}
-          >
+          <h2 className="mb-16 max-w-[720px] font-serif text-[44px] font-semibold leading-[1.1] tracking-[-0.02em] text-ink">
             From idea to live site in three steps.
           </h2>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
-              gap: 48,
-            }}
-          >
+          <div className="grid grid-cols-3 gap-12">
             {STEPS.map((s) => (
               <div key={s.n}>
-                <div
-                  style={{
-                    fontFamily: serifFont,
-                    fontSize: 88,
-                    lineHeight: 1,
-                    color: ACCENT,
-                    fontWeight: 600,
-                    letterSpacing: "-0.04em",
-                  }}
-                >
+                <div className="font-serif text-[88px] font-semibold leading-none tracking-[-0.04em] text-brand">
                   {s.n}
                 </div>
-                <h3
-                  style={{
-                    fontFamily: serifFont,
-                    fontSize: 22,
-                    fontWeight: 600,
-                    color: INK,
-                    marginTop: 24,
-                    marginBottom: 10,
-                    letterSpacing: "-0.01em",
-                  }}
-                >
+                <h3 className="mt-6 mb-2.5 font-serif text-[22px] font-semibold tracking-[-0.01em] text-ink">
                   {s.t}
                 </h3>
-                <p style={{ fontSize: 15, lineHeight: 1.6, color: MUTED, maxWidth: 320 }}>
+                <p className="max-w-[320px] text-[15px] leading-[1.6] text-muted-ink">
                   {s.d}
                 </p>
               </div>
@@ -358,30 +169,19 @@ export function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer
-        style={{
-          padding: "32px 56px",
-          borderTop: `1px solid ${BORDER}`,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          fontFamily: sansFont,
-          fontSize: 13,
-          color: MUTED,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <Wordmark size={16} />
+      <footer className="flex items-center justify-between border-t border-soft-border px-14 py-8 font-sans text-[13px] text-muted-ink">
+        <div className="flex items-center gap-4">
+          <Wordmark size="text-base" />
           <span>© {new Date().getFullYear()}</span>
         </div>
-        <div style={{ display: "flex", gap: 24 }}>
-          <Link href="#privacy" style={{ color: MUTED, textDecoration: "none" }}>
+        <div className="flex gap-6">
+          <Link href="#privacy" className="text-muted-ink no-underline">
             Privacy
           </Link>
-          <Link href="#terms" style={{ color: MUTED, textDecoration: "none" }}>
+          <Link href="#terms" className="text-muted-ink no-underline">
             Terms
           </Link>
-          <Link href="#contact" style={{ color: MUTED, textDecoration: "none" }}>
+          <Link href="#contact" className="text-muted-ink no-underline">
             Contact
           </Link>
         </div>

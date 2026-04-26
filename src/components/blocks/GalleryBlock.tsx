@@ -127,7 +127,7 @@ export function GalleryBlock({ section, theme, mode, onUpdate }: GalleryBlockPro
           {mode === "edit" && (
             <button
               onClick={handleAddImage}
-              className="flex aspect-square items-center justify-center border-2 border-dashed border-gray-300 text-gray-400 transition-colors hover:border-blue-400 hover:text-blue-500"
+              className="flex aspect-square items-center justify-center border-2 border-dashed border-gray-300 text-gray-400 transition-colors hover:border-brand hover:text-brand"
               style={{ borderRadius: theme.borderRadius }}
             >
               <div className="flex flex-col items-center gap-1">

@@ -45,7 +45,7 @@ export function SortableSection({
       style={style}
       data-section-id={section.id}
       className={`group relative ${
-        isSelected ? "ring-2 ring-blue-500" : ""
+        isSelected ? "ring-2 ring-brand" : ""
       }`}
       onClick={onSelect}
     >

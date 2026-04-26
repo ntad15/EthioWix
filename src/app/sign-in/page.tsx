@@ -33,13 +33,13 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-cream px-4 font-sans text-ink">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Fetan<span className="text-blue-600">Sites</span>
+          <h1 className="font-serif text-[32px] font-semibold tracking-[-0.025em] text-ink">
+            Fetan<span className="text-brand">Sites</span>
           </h1>
-          <p className="mt-2 text-sm text-gray-500">Sign in to your account</p>
+          <p className="mt-2 text-sm text-muted-ink">Sign in to your account</p>
         </div>
 
         <form onSubmit={handleSignIn} className="space-y-4">
@@ -50,29 +50,25 @@ export default function SignInPage() {
           )}
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Email
-            </label>
+            <label className="mb-1 block text-sm font-medium text-ink">Email</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-lg border border-soft-border bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
               placeholder="you@example.com"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Password
-            </label>
+            <label className="mb-1 block text-sm font-medium text-ink">Password</label>
             <input
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-lg border border-soft-border bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
               placeholder="••••••••"
             />
           </div>
@@ -80,15 +76,15 @@ export default function SignInPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            className="w-full rounded-lg bg-brand py-2.5 text-sm font-semibold text-white hover:bg-brand-soft disabled:opacity-50"
           >
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
+        <p className="mt-6 text-center text-sm text-muted-ink">
           Don&apos;t have an account?{" "}
-          <Link href="/sign-up" className="font-medium text-blue-600 hover:text-blue-700">
+          <Link href="/sign-up" className="font-medium text-brand hover:text-brand-soft">
             Sign up
           </Link>
         </p>
