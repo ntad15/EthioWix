@@ -48,7 +48,7 @@ sudo usermod -aG docker $USER
 
 # Install Docker Compose plugin
 sudo apt install docker-compose-plugin -y
-
+e
 # Log out and back in for group changes to take effect
 exit
 ```
