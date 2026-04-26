@@ -8,6 +8,8 @@ import { validateSlug } from "@/lib/utils/validation";
 import { Toast } from "@/components/ui/Toast";
 import { SectionType, Animation } from "@/types/site-config";
 import { createClient } from "@/lib/supabase/client";
+import { isShowcaseTemplate } from "@/components/showcases";
+import { ShowcaseEditor } from "@/components/showcases/editor";
 import {
   DndContext,
   closestCenter,
@@ -255,7 +257,21 @@ export function BuilderSidebar() {
 
       {/* Tab Content */}
       <div className="flex-1 overflow-y-auto">
-        {activeTab === "sections" && (
+        {activeTab === "sections" && isShowcaseTemplate(siteConfig.templateId) && (
+          <div className="p-4">
+            <div className="mb-3 rounded-md bg-brand-tint/40 p-2 text-[11px] text-brand">
+              This template has a fixed layout. Edit the content below — changes apply directly to the published site.
+            </div>
+            <ShowcaseEditor
+              templateId={siteConfig.templateId}
+              raw={siteConfig.showcaseData}
+              onChange={(patch) =>
+                dispatch({ type: "UPDATE_SHOWCASE_DATA", data: patch })
+              }
+            />
+          </div>
+        )}
+        {activeTab === "sections" && !isShowcaseTemplate(siteConfig.templateId) && (
           <div className="p-4">
             {/* Section List */}
             <div className="mb-3 flex items-center justify-between">

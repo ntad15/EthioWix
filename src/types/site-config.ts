@@ -163,6 +163,7 @@ export const siteConfigSchema = z.object({
   animation: animationSchema.optional(),
   theme: themeSchema,
   sections: z.array(sectionSchema),
+  showcaseData: z.record(z.string(), z.unknown()).optional(),
   published: z.boolean().default(false),
   createdAt: z.string(),
   updatedAt: z.string(),

@@ -23,6 +23,7 @@ type BuilderAction =
   | { type: "UPDATE_THEME"; theme: Partial<Theme> }
   | { type: "UPDATE_ANIMATION"; animation: Animation }
   | { type: "SWITCH_TEMPLATE"; templateId: TemplateId }
+  | { type: "UPDATE_SHOWCASE_DATA"; data: Record<string, unknown> }
   | { type: "TOGGLE_PUBLISH" }
   | { type: "MARK_SAVED" }
   | { type: "LOAD_CONFIG"; config: SiteConfig };
@@ -149,6 +150,19 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
         },
       };
     }
+    case "UPDATE_SHOWCASE_DATA":
+      return {
+        ...state,
+        isDirty: true,
+        siteConfig: {
+          ...state.siteConfig,
+          showcaseData: {
+            ...(state.siteConfig.showcaseData ?? {}),
+            ...action.data,
+          },
+          updatedAt: new Date().toISOString(),
+        },
+      };
     case "TOGGLE_PUBLISH":
       return {
         ...state,

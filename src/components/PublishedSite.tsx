@@ -3,12 +3,31 @@
 import { SiteConfig } from "@/types/site-config";
 import { SectionRenderer } from "./blocks/SectionRenderer";
 import { ScrollReveal } from "./blocks/ScrollReveal";
+import {
+  ShowcaseRenderer,
+  SHOWCASE_FONTS_HREF,
+  isShowcaseTemplate,
+} from "./showcases";
 
 interface PublishedSiteProps {
   config: SiteConfig;
 }
 
 export function PublishedSite({ config }: PublishedSiteProps) {
+  if (isShowcaseTemplate(config.templateId)) {
+    return (
+      <>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link rel="stylesheet" href={SHOWCASE_FONTS_HREF} />
+        <ShowcaseRenderer
+          templateId={config.templateId}
+          raw={config.showcaseData}
+        />
+      </>
+    );
+  }
+
   const animation = config.animation ?? "none";
 
   return (

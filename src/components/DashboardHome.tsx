@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Toast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
 import { addDefaultNav } from "@/components/builder/BuilderContext";
+import { isShowcaseTemplate, SHOWCASE_DEFAULTS } from "@/components/showcases";
 
 const AUTH_DISABLED = process.env.NEXT_PUBLIC_AUTH_DISABLED === "true";
 
@@ -74,6 +75,8 @@ export function DashboardHome() {
   const handleCreateSite = async (templateId: string) => {
     const template = templates[templateId as keyof typeof templates];
     const now = new Date().toISOString();
+    const tplId = template.config.templateId;
+    const isShowcase = isShowcaseTemplate(tplId);
     const newSite: SiteConfig = {
       id: uuidv4(),
       userId: "",
@@ -82,7 +85,12 @@ export function DashboardHome() {
       animation: "none",
       templateId: template.config.templateId,
       theme: template.config.theme,
-      sections: addDefaultNav(template.config.sections as SiteConfig["sections"], "My New Site"),
+      sections: isShowcase
+        ? (template.config.sections as SiteConfig["sections"])
+        : addDefaultNav(template.config.sections as SiteConfig["sections"], "My New Site"),
+      showcaseData: isShowcase
+        ? { ...SHOWCASE_DEFAULTS[tplId], brand: "My New Site" }
+        : undefined,
       published: false,
       createdAt: now,
       updatedAt: now,

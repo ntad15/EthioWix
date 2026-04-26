@@ -18,10 +18,29 @@ import {
 import { useBuilder } from "./BuilderContext";
 import { SortableSection } from "./SortableSection";
 import { Section } from "@/types/site-config";
+import {
+  ShowcaseRenderer,
+  SHOWCASE_FONTS_HREF,
+  isShowcaseTemplate,
+} from "@/components/showcases";
 
 export function BuilderCanvas() {
   const { state, dispatch } = useBuilder();
   const { siteConfig, selectedSectionId } = state;
+
+  if (isShowcaseTemplate(siteConfig.templateId)) {
+    return (
+      <div className="min-h-screen">
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link rel="stylesheet" href={SHOWCASE_FONTS_HREF} />
+        <ShowcaseRenderer
+          templateId={siteConfig.templateId}
+          raw={siteConfig.showcaseData}
+        />
+      </div>
+    );
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),

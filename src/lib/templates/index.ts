@@ -9,6 +9,11 @@ import { addisStayTemplate } from "./addis-stay";
 import { saffronStayTemplate } from "./saffron-stay";
 import { lulitSalonTemplate } from "./lulit-salon";
 import { vintageBarberTemplate } from "./vintage-barber";
+import {
+  fdCinematicTemplate,
+  hsRitualTemplate,
+  esCuratedTemplate,
+} from "./showcase-templates";
 export const CATEGORIES = [
   { id: "food", label: "Restaurants & Cafés", emoji: "🍽️" },
   { id: "stay", label: "Hotels & Stays", emoji: "🏨" },
@@ -107,6 +112,30 @@ export const templates = {
     description: "Classic and masculine — traditional barbershop style",
     preview: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=400&q=80",
     config: vintageBarberTemplate,
+  },
+  "fd-cinematic": {
+    id: "fd-cinematic",
+    name: "Cinematic Dining",
+    category: "food",
+    description: "Cinematic parallax hero, alternating menu rows, mosaic gallery — preview-only",
+    preview: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=80",
+    config: fdCinematicTemplate,
+  },
+  "hs-ritual": {
+    id: "hs-ritual",
+    name: "Ritual Spa",
+    category: "wellness",
+    description: "Warm earthy tones, numbered ritual steps, hover-lift treatments — preview-only",
+    preview: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=400&q=80",
+    config: hsRitualTemplate,
+  },
+  "es-curated": {
+    id: "es-curated",
+    name: "Curated Portfolio",
+    category: "photography",
+    description: "Curated mosaic grid with hover captions, restrained packages — preview-only",
+    preview: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=80",
+    config: esCuratedTemplate,
   },
 } as const satisfies Record<string, {
   id: string;
