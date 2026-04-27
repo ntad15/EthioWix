@@ -21,8 +21,33 @@ export function FdCinematic({ data }: { data: FdCinematicData }) {
     .toUpperCase();
 
   return (
-    <div style={{ background: ink, color: text, fontFamily: sans }}>
+    <div className="fd-root" style={{ background: ink, color: text, fontFamily: sans, overflowX: "hidden" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .fd-root .fd-nav { padding: 14px 18px !important; gap: 12px !important; }
+          .fd-root .fd-nav-links { display: none !important; }
+          .fd-root .fd-nav-cta { padding: 8px 14px !important; font-size: 11px !important; letter-spacing: 0.12em !important; }
+          .fd-root .fd-hero { height: 560px !important; }
+          .fd-root .fd-hero-inner { padding: 0 18px 56px !important; }
+          .fd-root .fd-hero-h1 { font-size: 56px !important; line-height: 0.98 !important; }
+          .fd-root .fd-hero-tagline { font-size: 18px !important; margin-top: 20px !important; }
+          .fd-root .fd-pad { padding-left: 18px !important; padding-right: 18px !important; padding-top: 64px !important; padding-bottom: 64px !important; }
+          .fd-root .fd-grid-2 { grid-template-columns: 1fr !important; gap: 32px !important; }
+          .fd-root .fd-h2 { font-size: 36px !important; }
+          .fd-root .fd-h3 { font-size: 28px !important; }
+          .fd-root .fd-menu-row { grid-template-columns: 1fr !important; gap: 14px !important; padding: 24px 0 !important; }
+          .fd-root .fd-menu-text { text-align: left !important; }
+          .fd-root .fd-menu-img { aspect-ratio: 16/10 !important; width: 100% !important; }
+          .fd-root .fd-menu-row-odd > .fd-menu-text { order: 2 !important; }
+          .fd-root .fd-menu-row-odd > .fd-menu-img { order: 1 !important; }
+          .fd-root .fd-menu-row-odd > .fd-price { order: 3 !important; }
+          .fd-root .fd-gallery { grid-template-columns: 1fr 1fr !important; grid-template-rows: auto !important; gap: 8px !important; }
+          .fd-root .fd-gallery > * { grid-area: auto !important; aspect-ratio: 4/3 !important; }
+          .fd-root .fd-footer { padding: 24px 18px !important; }
+        }
+      `}</style>
       <div
+        className="fd-nav"
         style={{
           position: "sticky",
           top: 0,
@@ -39,6 +64,7 @@ export function FdCinematic({ data }: { data: FdCinematicData }) {
           {monogram}
         </span>
         <div
+          className="fd-nav-links"
           style={{
             display: "flex",
             gap: 32,
@@ -54,6 +80,7 @@ export function FdCinematic({ data }: { data: FdCinematicData }) {
         </div>
         <a
           href={data.bookingUrl}
+          className="fd-nav-cta"
           style={{
             padding: "10px 20px",
             border: `1px solid ${gold}`,
@@ -68,8 +95,9 @@ export function FdCinematic({ data }: { data: FdCinematicData }) {
         </a>
       </div>
 
-      <ParallaxBg src={data.heroImage} strength={0.16} style={{ height: 720, marginTop: -68 }}>
+      <ParallaxBg src={data.heroImage} strength={0.16} style={{ height: 720, marginTop: -68 }} className="fd-hero">
         <div
+          className="fd-hero-inner"
           style={{
             height: "100%",
             display: "flex",
@@ -90,6 +118,7 @@ export function FdCinematic({ data }: { data: FdCinematicData }) {
             <Reveal y={12}>{data.heroEyebrow}</Reveal>
           </div>
           <h1
+            className="fd-hero-h1"
             style={{
               fontFamily: serif,
               fontSize: 112,
@@ -113,6 +142,7 @@ export function FdCinematic({ data }: { data: FdCinematicData }) {
           </h1>
           <Reveal delay={600} y={16}>
             <p
+              className="fd-hero-tagline"
               style={{
                 fontFamily: serif,
                 fontStyle: "italic",
@@ -131,8 +161,9 @@ export function FdCinematic({ data }: { data: FdCinematicData }) {
 
       <Marquee items={data.marquee} color={gold} bg={ink} font={sans} />
 
-      <section style={{ padding: "120px 56px", borderTop: `1px solid #1f1f2e` }}>
+      <section className="fd-pad" style={{ padding: "120px 56px", borderTop: `1px solid #1f1f2e` }}>
         <div
+          className="fd-grid-2"
           style={{
             maxWidth: 1100,
             margin: "0 auto",
@@ -155,6 +186,7 @@ export function FdCinematic({ data }: { data: FdCinematicData }) {
               {data.storyEyebrow}
             </div>
             <h2
+              className="fd-h2"
               style={{
                 fontFamily: serif,
                 fontSize: 56,
@@ -196,7 +228,7 @@ export function FdCinematic({ data }: { data: FdCinematicData }) {
         </div>
       </section>
 
-      <section style={{ background: cream, color: ink, padding: "120px 56px" }}>
+      <section className="fd-pad" style={{ background: cream, color: ink, padding: "120px 56px" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>
           <Reveal>
             <div
@@ -212,6 +244,7 @@ export function FdCinematic({ data }: { data: FdCinematicData }) {
               {data.menuEyebrow}
             </div>
             <h2
+              className="fd-h2"
               style={{
                 fontFamily: serif,
                 fontSize: 56,
@@ -227,6 +260,7 @@ export function FdCinematic({ data }: { data: FdCinematicData }) {
           {data.menuItems.map((m, i) => (
             <Reveal key={i} delay={i * 80}>
               <div
+                className={`fd-menu-row ${i % 2 === 0 ? "" : "fd-menu-row-odd"}`}
                 style={{
                   display: "grid",
                   gridTemplateColumns: i % 2 === 0 ? "200px 1fr auto" : "1fr 200px auto",
@@ -239,6 +273,7 @@ export function FdCinematic({ data }: { data: FdCinematicData }) {
                 {i % 2 === 0 ? (
                   <>
                     <div
+                      className="fd-menu-img"
                       style={{
                         aspectRatio: "1",
                         backgroundImage: `url(${m.img})`,
@@ -246,22 +281,22 @@ export function FdCinematic({ data }: { data: FdCinematicData }) {
                         backgroundPosition: "center",
                       }}
                     />
-                    <div>
-                      <h3 style={{ fontFamily: serif, fontSize: 30, fontWeight: 400, marginBottom: 8 }}>
+                    <div className="fd-menu-text">
+                      <h3 className="fd-h3" style={{ fontFamily: serif, fontSize: 30, fontWeight: 400, marginBottom: 8 }}>
                         {m.name}
                       </h3>
                       <p style={{ color: "#6b6151", fontSize: 16, fontStyle: "italic" }}>
                         {m.desc}
                       </p>
                     </div>
-                    <div style={{ fontFamily: serif, fontSize: 28, color: "#9c7c3c" }}>
+                    <div className="fd-price" style={{ fontFamily: serif, fontSize: 28, color: "#9c7c3c" }}>
                       {m.price}
                     </div>
                   </>
                 ) : (
                   <>
-                    <div style={{ textAlign: "right" }}>
-                      <h3 style={{ fontFamily: serif, fontSize: 30, fontWeight: 400, marginBottom: 8 }}>
+                    <div className="fd-menu-text" style={{ textAlign: "right" }}>
+                      <h3 className="fd-h3" style={{ fontFamily: serif, fontSize: 30, fontWeight: 400, marginBottom: 8 }}>
                         {m.name}
                       </h3>
                       <p style={{ color: "#6b6151", fontSize: 16, fontStyle: "italic" }}>
@@ -269,6 +304,7 @@ export function FdCinematic({ data }: { data: FdCinematicData }) {
                       </p>
                     </div>
                     <div
+                      className="fd-menu-img"
                       style={{
                         aspectRatio: "1",
                         backgroundImage: `url(${m.img})`,
@@ -276,7 +312,7 @@ export function FdCinematic({ data }: { data: FdCinematicData }) {
                         backgroundPosition: "center",
                       }}
                     />
-                    <div style={{ fontFamily: serif, fontSize: 28, color: "#9c7c3c" }}>
+                    <div className="fd-price" style={{ fontFamily: serif, fontSize: 28, color: "#9c7c3c" }}>
                       {m.price}
                     </div>
                   </>
@@ -287,10 +323,11 @@ export function FdCinematic({ data }: { data: FdCinematicData }) {
         </div>
       </section>
 
-      <section style={{ padding: "120px 56px" }}>
+      <section className="fd-pad" style={{ padding: "120px 56px" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <Reveal>
             <h2
+              className="fd-h2"
               style={{
                 fontFamily: serif,
                 fontSize: 56,
@@ -303,6 +340,7 @@ export function FdCinematic({ data }: { data: FdCinematicData }) {
             </h2>
           </Reveal>
           <div
+            className="fd-gallery"
             style={{
               display: "grid",
               gridTemplateColumns: "1.4fr 1fr 1fr",
@@ -338,8 +376,9 @@ export function FdCinematic({ data }: { data: FdCinematicData }) {
         </div>
       </section>
 
-      <section style={{ padding: "100px 56px", borderTop: `1px solid #1f1f2e` }}>
+      <section className="fd-pad" style={{ padding: "100px 56px", borderTop: `1px solid #1f1f2e` }}>
         <div
+          className="fd-grid-2"
           style={{
             maxWidth: 1100,
             margin: "0 auto",
@@ -360,7 +399,7 @@ export function FdCinematic({ data }: { data: FdCinematicData }) {
             >
               Visit
             </div>
-            <h3 style={{ fontFamily: serif, fontSize: 36, fontWeight: 400, marginBottom: 20 }}>
+            <h3 className="fd-h3" style={{ fontFamily: serif, fontSize: 36, fontWeight: 400, marginBottom: 20 }}>
               {data.visitHeading}
             </h3>
             <p style={{ color: muted, marginBottom: 24 }}>{data.visitArea}</p>
@@ -392,7 +431,7 @@ export function FdCinematic({ data }: { data: FdCinematicData }) {
             >
               Reservations
             </div>
-            <h3 style={{ fontFamily: serif, fontSize: 36, fontWeight: 400, marginBottom: 32 }}>
+            <h3 className="fd-h3" style={{ fontFamily: serif, fontSize: 36, fontWeight: 400, marginBottom: 32 }}>
               {data.reservationsHeading}
             </h3>
             <p style={{ color: muted, marginBottom: 8 }}>{data.phone}</p>
@@ -418,6 +457,7 @@ export function FdCinematic({ data }: { data: FdCinematicData }) {
       </section>
 
       <footer
+        className="fd-footer"
         style={{
           padding: "32px 56px",
           borderTop: `1px solid #1f1f2e`,

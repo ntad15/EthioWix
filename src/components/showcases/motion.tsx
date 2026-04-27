@@ -56,12 +56,14 @@ export function ParallaxBg({
   strength = 0.18,
   children,
   style,
+  className,
 }: {
   src: string;
   overlay?: boolean;
   strength?: number;
   children?: ReactNode;
   style?: CSSProperties;
+  className?: string;
 }) {
   const wrap = useRef<HTMLDivElement>(null);
   const bg = useRef<HTMLDivElement>(null);
@@ -81,7 +83,7 @@ export function ParallaxBg({
   }, [strength]);
 
   return (
-    <div ref={wrap} style={{ position: "relative", overflow: "hidden", ...style }}>
+    <div ref={wrap} className={className} style={{ position: "relative", overflow: "hidden", ...style }}>
       <div
         ref={bg}
         style={{

@@ -14,8 +14,27 @@ const sans = "'Nunito Sans', system-ui, sans-serif";
 
 export function HsRitual({ data }: { data: HsRitualData }) {
   return (
-    <div style={{ background: cream, color: ink, fontFamily: sans }}>
+    <div className="hs-root" style={{ background: cream, color: ink, fontFamily: sans, overflowX: "hidden" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .hs-root .hs-nav { padding: 14px 18px !important; }
+          .hs-root .hs-nav-links { display: none !important; }
+          .hs-root .hs-pad { padding-left: 18px !important; padding-right: 18px !important; padding-top: 56px !important; padding-bottom: 56px !important; }
+          .hs-root .hs-grid-2 { grid-template-columns: 1fr !important; gap: 32px !important; }
+          .hs-root .hs-grid-3 { grid-template-columns: 1fr !important; gap: 16px !important; }
+          .hs-root .hs-h1 { font-size: 56px !important; line-height: 1 !important; }
+          .hs-root .hs-h2 { font-size: 32px !important; }
+          .hs-root .hs-h3 { font-size: 28px !important; }
+          .hs-root .hs-step { grid-template-columns: 1fr !important; gap: 24px !important; margin-bottom: 40px !important; }
+          .hs-root .hs-step > * { order: 0 !important; }
+          .hs-root .hs-step-num { font-size: 64px !important; }
+          .hs-root .hs-section-head { flex-direction: column !important; align-items: flex-start !important; gap: 6px !important; }
+          .hs-root .hs-reserve-card { padding: 28px !important; }
+          .hs-root .hs-footer { padding: 24px 18px !important; }
+        }
+      `}</style>
       <nav
+        className="hs-nav"
         style={{
           display: "flex",
           justifyContent: "space-between",
@@ -38,7 +57,7 @@ export function HsRitual({ data }: { data: HsRitualData }) {
         >
           {data.brand}
         </span>
-        <div style={{ display: "flex", gap: 32, fontSize: 13, color: muted }}>
+        <div className="hs-nav-links" style={{ display: "flex", gap: 32, fontSize: 13, color: muted }}>
           <a style={{ color: muted, textDecoration: "none" }}>The Ritual</a>
           <a style={{ color: muted, textDecoration: "none" }}>Treatments</a>
           <a style={{ color: muted, textDecoration: "none" }}>The Space</a>
@@ -48,8 +67,9 @@ export function HsRitual({ data }: { data: HsRitualData }) {
         </div>
       </nav>
 
-      <section style={{ padding: "60px 48px 100px" }}>
+      <section className="hs-pad" style={{ padding: "60px 48px 100px" }}>
         <div
+          className="hs-grid-2"
           style={{
             maxWidth: 1200,
             margin: "0 auto",
@@ -72,6 +92,7 @@ export function HsRitual({ data }: { data: HsRitualData }) {
               · {data.brand} · {data.location}
             </div>
             <h1
+              className="hs-h1"
               style={{
                 fontFamily: serif,
                 fontSize: 112,
@@ -180,7 +201,7 @@ export function HsRitual({ data }: { data: HsRitualData }) {
         separator="✦"
       />
 
-      <section style={{ padding: "120px 48px" }}>
+      <section className="hs-pad" style={{ padding: "120px 48px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <Reveal>
             <div
@@ -195,6 +216,7 @@ export function HsRitual({ data }: { data: HsRitualData }) {
               {data.ritualEyebrow}
             </div>
             <h2
+              className="hs-h2"
               style={{
                 fontFamily: serif,
                 fontSize: 56,
@@ -211,6 +233,7 @@ export function HsRitual({ data }: { data: HsRitualData }) {
           {data.ritualSteps.map((s, i) => (
             <Reveal key={i} delay={i * 100}>
               <div
+                className="hs-step"
                 style={{
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",
@@ -221,6 +244,7 @@ export function HsRitual({ data }: { data: HsRitualData }) {
               >
                 <div style={{ order: i % 2 === 0 ? 0 : 1 }}>
                   <div
+                    className="hs-step-num"
                     style={{
                       fontFamily: serif,
                       fontSize: 96,
@@ -233,6 +257,7 @@ export function HsRitual({ data }: { data: HsRitualData }) {
                     {s.n}
                   </div>
                   <h3
+                    className="hs-h3"
                     style={{
                       fontFamily: serif,
                       fontSize: 40,
@@ -262,10 +287,11 @@ export function HsRitual({ data }: { data: HsRitualData }) {
         </div>
       </section>
 
-      <section style={{ padding: "100px 48px", background: "#efe2cf" }}>
+      <section className="hs-pad" style={{ padding: "100px 48px", background: "#efe2cf" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <Reveal>
             <div
+              className="hs-section-head"
               style={{
                 display: "flex",
                 justifyContent: "space-between",
@@ -273,13 +299,13 @@ export function HsRitual({ data }: { data: HsRitualData }) {
                 marginBottom: 56,
               }}
             >
-              <h2 style={{ fontFamily: serif, fontSize: 48, fontWeight: 400, color: earth }}>
+              <h2 className="hs-h2" style={{ fontFamily: serif, fontSize: 48, fontWeight: 400, color: earth }}>
                 {data.treatmentsHeading}
               </h2>
               <span style={{ fontSize: 13, color: muted }}>{data.treatmentsNote}</span>
             </div>
           </Reveal>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 24 }}>
+          <div className="hs-grid-3" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 24 }}>
             {data.treatments.map((t, i) => (
               <Reveal key={i} delay={i * 100}>
                 <HoverLift style={{ background: cream, borderRadius: 14, overflow: "hidden" }}>
@@ -335,8 +361,9 @@ export function HsRitual({ data }: { data: HsRitualData }) {
         </div>
       </section>
 
-      <section style={{ padding: "100px 48px" }}>
+      <section className="hs-pad" style={{ padding: "100px 48px" }}>
         <div
+          className="hs-grid-2"
           style={{
             maxWidth: 1100,
             margin: "0 auto",
@@ -358,6 +385,7 @@ export function HsRitual({ data }: { data: HsRitualData }) {
               Visit
             </div>
             <h3
+              className="hs-h3"
               style={{
                 fontFamily: serif,
                 fontSize: 44,
@@ -385,8 +413,8 @@ export function HsRitual({ data }: { data: HsRitualData }) {
             ))}
           </Reveal>
           <Reveal delay={120}>
-            <div style={{ background: earth, color: cream, padding: 48, borderRadius: 16 }}>
-              <h3 style={{ fontFamily: serif, fontSize: 36, fontWeight: 400, marginBottom: 24 }}>
+            <div className="hs-reserve-card" style={{ background: earth, color: cream, padding: 48, borderRadius: 16 }}>
+              <h3 className="hs-h3" style={{ fontFamily: serif, fontSize: 36, fontWeight: 400, marginBottom: 24 }}>
                 {data.reserveHeading}
               </h3>
               <p style={{ marginBottom: 8, color: sand }}>{data.phone}</p>
@@ -411,6 +439,7 @@ export function HsRitual({ data }: { data: HsRitualData }) {
       </section>
 
       <footer
+        className="hs-footer"
         style={{
           padding: "32px 48px",
           fontSize: 12,

@@ -12,6 +12,15 @@ import { addDefaultNav } from "@/components/builder/BuilderContext";
 import { isShowcaseTemplate, SHOWCASE_DEFAULTS } from "@/components/showcases";
 
 const AUTH_DISABLED = process.env.NEXT_PUBLIC_AUTH_DISABLED === "true";
+const SITE_DOMAIN = process.env.NEXT_PUBLIC_DOMAIN ?? "fetansites.com";
+const SITE_PROTOCOL = SITE_DOMAIN.startsWith("localhost") ? "http" : "https";
+
+function siteUrl(slug: string) {
+  return `${SITE_PROTOCOL}://${slug}.${SITE_DOMAIN}`;
+}
+function siteHost(slug: string) {
+  return `${slug}.${SITE_DOMAIN}`;
+}
 
 function describeSites(count: number, drafts: number) {
   if (count === 0) {
@@ -264,7 +273,7 @@ export function DashboardHome() {
                       {site.published ? "Live" : "Draft"}
                     </span>
                   </div>
-                  <p className="mb-3.5 text-[13px] text-muted-ink">fetan.sites/{site.slug}</p>
+                  <p className="mb-3.5 text-[13px] text-muted-ink">{siteHost(site.slug)}</p>
                   <div className="flex gap-2">
                     <Link
                       href={`/builder?siteId=${site.id}`}
@@ -274,8 +283,9 @@ export function DashboardHome() {
                     </Link>
                     {site.published && (
                       <Link
-                        href={`/sites/${site.slug}`}
+                        href={siteUrl(site.slug)}
                         target="_blank"
+                        rel="noopener noreferrer"
                         className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-soft-border py-2 text-[13px] font-medium text-ink no-underline hover:bg-cream"
                       >
                         <Globe size={14} /> View

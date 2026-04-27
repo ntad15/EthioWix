@@ -5,12 +5,14 @@ services:
       args:
         NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
         NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_DOMAIN: ${DOMAIN}
     restart: unless-stopped
     volumes:
       - site-data:/app/.data
     environment:
       - NODE_ENV=production
       - DOMAIN=${DOMAIN:-localhost}
+      - NEXT_PUBLIC_DOMAIN=${DOMAIN:-localhost}
       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
       - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
     expose:

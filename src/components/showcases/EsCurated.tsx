@@ -12,14 +12,31 @@ const sans = "'Geist', 'Inter', system-ui, sans-serif";
 
 export function EsCurated({ data }: { data: EsCuratedData }) {
   return (
-    <div style={{ background: paper, color: ink, fontFamily: sans }}>
+    <div className="es-root" style={{ background: paper, color: ink, fontFamily: sans, overflowX: "hidden" }}>
       <style>{`
         .fs-enat-tile:hover .fs-enat-img { transform: scale(1.05); }
         .fs-enat-tile:hover .fs-enat-cap { opacity: 1; }
         @keyframes fs-kenburns3 { from { transform: scale(1.0); } to { transform: scale(1.06); } }
+        @media (max-width: 768px) {
+          .es-root .es-nav { padding: 16px 20px !important; }
+          .es-root .es-nav-links { display: none !important; }
+          .es-root .es-pad { padding-left: 20px !important; padding-right: 20px !important; padding-top: 56px !important; padding-bottom: 56px !important; }
+          .es-root .es-grid-2 { grid-template-columns: 1fr !important; gap: 32px !important; min-height: 0 !important; }
+          .es-root .es-grid-3 { grid-template-columns: 1fr !important; gap: 12px !important; }
+          .es-root .es-grid-3 > * { grid-area: auto !important; }
+          .es-root .es-tile { height: auto !important; aspect-ratio: 4/3 !important; }
+          .es-root .es-hero-img { max-height: 420px !important; }
+          .es-root .es-h1 { font-size: 48px !important; line-height: 1 !important; }
+          .es-root .es-h2 { font-size: 32px !important; }
+          .es-root .es-h3 { font-size: 22px !important; }
+          .es-root .es-pkg-row { grid-template-columns: 1fr !important; gap: 8px !important; }
+          .es-root .es-section-head { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
+          .es-root .es-footer { padding: 24px 20px !important; }
+        }
       `}</style>
 
       <nav
+        className="es-nav"
         style={{
           display: "flex",
           justifyContent: "space-between",
@@ -31,7 +48,7 @@ export function EsCurated({ data }: { data: EsCuratedData }) {
         <span style={{ fontFamily: serif, fontSize: 22, letterSpacing: "-0.01em" }}>
           {data.brand}
         </span>
-        <div style={{ display: "flex", gap: 32, fontSize: 13, color: muted }}>
+        <div className="es-nav-links" style={{ display: "flex", gap: 32, fontSize: 13, color: muted }}>
           <a style={{ color: muted, textDecoration: "none" }}>Work</a>
           <a style={{ color: muted, textDecoration: "none" }}>About</a>
           <a style={{ color: muted, textDecoration: "none" }}>Packages</a>
@@ -41,8 +58,9 @@ export function EsCurated({ data }: { data: EsCuratedData }) {
         </div>
       </nav>
 
-      <section style={{ padding: "80px 56px 80px" }}>
+      <section className="es-pad" style={{ padding: "80px 56px 80px" }}>
         <div
+          className="es-grid-2"
           style={{
             maxWidth: 1200,
             margin: "0 auto",
@@ -66,6 +84,7 @@ export function EsCurated({ data }: { data: EsCuratedData }) {
               {data.heroEyebrow}
             </div>
             <h1
+              className="es-h1"
               style={{
                 fontFamily: serif,
                 fontSize: 96,
@@ -122,7 +141,7 @@ export function EsCurated({ data }: { data: EsCuratedData }) {
             </div>
           </Reveal>
           <Reveal delay={150}>
-            <div style={{ aspectRatio: "3/4", overflow: "hidden", maxHeight: 540 }}>
+            <div className="es-hero-img" style={{ aspectRatio: "3/4", overflow: "hidden", maxHeight: 540 }}>
               <div
                 style={{
                   width: "100%",
@@ -138,10 +157,11 @@ export function EsCurated({ data }: { data: EsCuratedData }) {
         </div>
       </section>
 
-      <section style={{ padding: "80px 56px" }}>
+      <section className="es-pad" style={{ padding: "80px 56px" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <Reveal>
             <div
+              className="es-section-head"
               style={{
                 display: "flex",
                 justifyContent: "space-between",
@@ -150,6 +170,7 @@ export function EsCurated({ data }: { data: EsCuratedData }) {
               }}
             >
               <h2
+                className="es-h2"
                 style={{
                   fontFamily: serif,
                   fontSize: 48,
@@ -172,6 +193,7 @@ export function EsCurated({ data }: { data: EsCuratedData }) {
             </div>
           </Reveal>
           <div
+            className="es-grid-3"
             style={{
               display: "grid",
               gridTemplateColumns: "1fr 1fr 1fr",
@@ -182,7 +204,7 @@ export function EsCurated({ data }: { data: EsCuratedData }) {
             {data.works.map((w, i) => (
               <Reveal key={i} delay={i * 60} style={{ gridArea: w.area }}>
                 <div
-                  className="fs-enat-tile"
+                  className="fs-enat-tile es-tile"
                   style={{
                     position: "relative",
                     height: w.h,
@@ -226,8 +248,9 @@ export function EsCurated({ data }: { data: EsCuratedData }) {
         </div>
       </section>
 
-      <section style={{ padding: "120px 56px", borderTop: `1px solid #e8e8e8` }}>
+      <section className="es-pad" style={{ padding: "120px 56px", borderTop: `1px solid #e8e8e8` }}>
         <div
+          className="es-grid-2"
           style={{
             maxWidth: 1000,
             margin: "0 auto",
@@ -238,6 +261,7 @@ export function EsCurated({ data }: { data: EsCuratedData }) {
         >
           <Reveal>
             <h2
+              className="es-h2"
               style={{
                 fontFamily: serif,
                 fontSize: 48,
@@ -255,6 +279,7 @@ export function EsCurated({ data }: { data: EsCuratedData }) {
             {data.packages.map((m, i) => (
               <Reveal key={i} delay={i * 80}>
                 <div
+                  className="es-pkg-row"
                   style={{
                     display: "grid",
                     gridTemplateColumns: "1fr auto",
@@ -265,7 +290,7 @@ export function EsCurated({ data }: { data: EsCuratedData }) {
                   }}
                 >
                   <div>
-                    <h3 style={{ fontFamily: serif, fontSize: 28, fontWeight: 400, marginBottom: 6 }}>
+                    <h3 className="es-h3" style={{ fontFamily: serif, fontSize: 28, fontWeight: 400, marginBottom: 6 }}>
                       {m.n}
                     </h3>
                     <p style={{ color: muted, fontSize: 14 }}>{m.d}</p>
@@ -280,8 +305,9 @@ export function EsCurated({ data }: { data: EsCuratedData }) {
         </div>
       </section>
 
-      <section style={{ padding: "100px 56px", background: "#f1ede5" }}>
+      <section className="es-pad" style={{ padding: "100px 56px", background: "#f1ede5" }}>
         <div
+          className="es-grid-2"
           style={{
             maxWidth: 1000,
             margin: "0 auto",
@@ -291,7 +317,7 @@ export function EsCurated({ data }: { data: EsCuratedData }) {
           }}
         >
           <Reveal>
-            <h2 style={{ fontFamily: serif, fontSize: 40, fontWeight: 400, marginBottom: 16 }}>
+            <h2 className="es-h2" style={{ fontFamily: serif, fontSize: 40, fontWeight: 400, marginBottom: 16 }}>
               Studio
             </h2>
             <p
@@ -331,7 +357,7 @@ export function EsCurated({ data }: { data: EsCuratedData }) {
             ))}
           </Reveal>
           <Reveal delay={120}>
-            <h2 style={{ fontFamily: serif, fontSize: 40, fontWeight: 400, marginBottom: 16 }}>
+            <h2 className="es-h2" style={{ fontFamily: serif, fontSize: 40, fontWeight: 400, marginBottom: 16 }}>
               Inquire
             </h2>
             <p style={{ color: muted, marginBottom: 32, fontSize: 15, lineHeight: 1.7 }}>
@@ -359,6 +385,7 @@ export function EsCurated({ data }: { data: EsCuratedData }) {
       </section>
 
       <footer
+        className="es-footer"
         style={{
           padding: "32px 56px",
           fontSize: 12,
