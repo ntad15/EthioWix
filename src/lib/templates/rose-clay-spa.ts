@@ -68,7 +68,6 @@ export const roseClaySpaTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "s
       data: {
         heading: "Find Us",
         address: "27 Kazanchis Lane, Addis Ababa",
-        mapEmbedUrl: "",
         schedule: [
           { day: "Wednesday - Friday", hours: "11:00 AM - 7:00 PM" },
           { day: "Saturday", hours: "10:00 AM - 6:00 PM" },

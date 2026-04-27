@@ -70,7 +70,6 @@ export const hotelStayTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "slu
       data: {
         heading: "Location",
         address: "789 Oceanfront Boulevard, Seaside",
-        mapEmbedUrl: "",
         schedule: [
           { day: "Check-in", hours: "3:00 PM" },
           { day: "Check-out", hours: "11:00 AM" },

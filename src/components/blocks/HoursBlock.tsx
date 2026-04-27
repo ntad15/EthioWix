@@ -1,6 +1,7 @@
 "use client";
 
 import { HoursSection, Theme } from "@/types/site-config";
+import { googleMapsEmbedUrl } from "@/lib/utils/maps";
 
 interface HoursBlockProps {
   section: HoursSection;
@@ -52,9 +53,9 @@ export function HoursBlock({ section, theme, mode, onUpdate }: HoursBlockProps) 
         <div className="grid gap-12 md:grid-cols-2">
           {/* Map / Address */}
           <div>
-            {data.mapEmbedUrl ? (
+            {googleMapsEmbedUrl(data.address) ? (
               <iframe
-                src={data.mapEmbedUrl}
+                src={googleMapsEmbedUrl(data.address)!}
                 className="mb-4 h-64 w-full border-0"
                 style={{ borderRadius: theme.borderRadius }}
                 allowFullScreen

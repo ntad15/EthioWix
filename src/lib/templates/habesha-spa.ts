@@ -70,7 +70,6 @@ export const habeshaSpaTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "sl
       data: {
         heading: "Visit",
         address: "14 Bole Road, Addis Ababa",
-        mapEmbedUrl: "",
         schedule: [
           { day: "Tuesday - Thursday", hours: "10:00 AM - 8:00 PM" },
           { day: "Friday - Saturday", hours: "9:00 AM - 9:00 PM" },

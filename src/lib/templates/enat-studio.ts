@@ -70,7 +70,6 @@ export const enatStudioTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "sl
       data: {
         heading: "Studio",
         address: "Studio 4, Piassa District, Addis Ababa",
-        mapEmbedUrl: "",
         schedule: [
           { day: "Consultations", hours: "By appointment" },
           { day: "Shoot days", hours: "Mon - Sat" },

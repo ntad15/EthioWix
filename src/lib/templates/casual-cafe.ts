@@ -68,7 +68,6 @@ export const casualCafeTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "sl
       data: {
         heading: "Find Us",
         address: "456 Maple Street, Arts District",
-        mapEmbedUrl: "",
         schedule: [
           { day: "Monday - Friday", hours: "7:00 AM - 6:00 PM" },
           { day: "Saturday", hours: "8:00 AM - 7:00 PM" },

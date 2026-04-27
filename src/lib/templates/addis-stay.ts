@@ -70,7 +70,6 @@ export const addisStayTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "slu
       data: {
         heading: "Stay With Us",
         address: "Entoto Hills, Addis Ababa",
-        mapEmbedUrl: "",
         schedule: [
           { day: "Check-in", hours: "2:00 PM" },
           { day: "Check-out", hours: "11:00 AM" },

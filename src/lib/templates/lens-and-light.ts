@@ -70,7 +70,6 @@ export const lensAndLightTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "
       data: {
         heading: "The Studio",
         address: "Shop 2A, Arat Kilo, Addis Ababa",
-        mapEmbedUrl: "",
         schedule: [
           { day: "Darkroom", hours: "Tue - Fri" },
           { day: "Meetings", hours: "By appointment" },

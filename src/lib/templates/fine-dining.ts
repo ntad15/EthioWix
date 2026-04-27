@@ -70,7 +70,6 @@ export const fineDiningTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "sl
       data: {
         heading: "Visit Us",
         address: "123 Gourmet Avenue, Downtown",
-        mapEmbedUrl: "",
         schedule: [
           { day: "Monday", hours: "Closed" },
           { day: "Tuesday - Thursday", hours: "6:00 PM - 10:00 PM" },

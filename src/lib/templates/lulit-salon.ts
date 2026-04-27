@@ -70,7 +70,6 @@ export const lulitSalonTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "sl
       data: {
         heading: "The Salon",
         address: "Suite 4, Sar Bet, Addis Ababa",
-        mapEmbedUrl: "",
         schedule: [
           { day: "Tuesday - Thursday", hours: "10:00 AM - 7:00 PM" },
           { day: "Friday", hours: "10:00 AM - 8:00 PM" },

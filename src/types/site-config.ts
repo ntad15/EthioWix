@@ -87,7 +87,6 @@ export const hoursSectionSchema = z.object({
   data: z.object({
     heading: z.string(),
     address: z.string(),
-    mapEmbedUrl: z.string(),
     schedule: z.array(hourEntrySchema),
   }),
 });

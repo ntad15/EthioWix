@@ -70,7 +70,6 @@ export const vintageBarberTemplate: Omit<SiteConfig, "id" | "userId" | "name" | 
       data: {
         heading: "The Shop",
         address: "112 Churchill Avenue, Addis Ababa",
-        mapEmbedUrl: "",
         schedule: [
           { day: "Tuesday - Friday", hours: "9:00 AM - 7:00 PM" },
           { day: "Saturday", hours: "8:00 AM - 8:00 PM" },

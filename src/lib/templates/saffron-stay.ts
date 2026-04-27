@@ -70,7 +70,6 @@ export const saffronStayTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "s
       data: {
         heading: "The Details",
         address: "Jugol Old Town, Harar",
-        mapEmbedUrl: "",
         schedule: [
           { day: "Check-in", hours: "Anytime after 1 PM" },
           { day: "Check-out", hours: "By 11 AM" },
