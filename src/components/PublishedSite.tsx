@@ -13,6 +13,24 @@ interface PublishedSiteProps {
   config: SiteConfig;
 }
 
+function PoweredByFooter() {
+  const domain = process.env.NEXT_PUBLIC_DOMAIN ?? "fetansites.com";
+  const protocol = domain.startsWith("localhost") ? "http" : "https";
+  return (
+    <div className="bg-black px-4 py-3 text-center text-xs text-white/70">
+      Site powered by{" "}
+      <a
+        href={`${protocol}://${domain}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="font-medium text-white underline-offset-2 hover:underline"
+      >
+        {domain}
+      </a>
+    </div>
+  );
+}
+
 export function PublishedSite({ config }: PublishedSiteProps) {
   if (isShowcaseTemplate(config.templateId)) {
     return (
@@ -24,6 +42,7 @@ export function PublishedSite({ config }: PublishedSiteProps) {
           templateId={config.templateId}
           raw={config.showcaseData}
         />
+        <PoweredByFooter />
       </>
     );
   }
@@ -81,6 +100,8 @@ export function PublishedSite({ config }: PublishedSiteProps) {
       >
         &copy; {new Date().getFullYear()} {config.name}. All rights reserved.
       </footer>
+
+      <PoweredByFooter />
 
       {animation === "fade-in" && (
         <style>{`
