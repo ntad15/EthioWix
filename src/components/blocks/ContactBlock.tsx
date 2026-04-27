@@ -1,7 +1,9 @@
 "use client";
 
-import { ContactSection, Theme } from "@/types/site-config";
-import { Phone, Mail, ExternalLink, Link2 } from "lucide-react";
+import { ContactSection, SocialLink, SocialPlatform, Theme, SOCIAL_PLATFORMS } from "@/types/site-config";
+import { Phone, Mail, ExternalLink, Link2, Trash2, Plus } from "lucide-react";
+import { v4 as uuidv4 } from "uuid";
+import { SocialIcon, PLATFORM_LABELS } from "./SocialIcon";
 
 interface ContactBlockProps {
   section: ContactSection;
@@ -17,6 +19,21 @@ export function ContactBlock({ section, theme, mode, onUpdate }: ContactBlockPro
     if (mode === "edit" && onUpdate) {
       onUpdate({ ...data, [field]: value });
     }
+  };
+
+  const socials = data.socials ?? [];
+
+  const updateSocials = (next: SocialLink[]) => {
+    if (onUpdate) onUpdate({ ...data, socials: next });
+  };
+  const handleSocialChange = (id: string, field: "platform" | "url", value: string) => {
+    updateSocials(socials.map((s) => (s.id === id ? { ...s, [field]: value } : s)));
+  };
+  const handleAddSocial = () => {
+    updateSocials([...socials, { id: uuidv4(), platform: "instagram", url: "" }]);
+  };
+  const handleDeleteSocial = (id: string) => {
+    updateSocials(socials.filter((s) => s.id !== id));
   };
 
   const sectionBg = theme.backgroundColor;
@@ -78,6 +95,77 @@ export function ContactBlock({ section, theme, mode, onUpdate }: ContactBlockPro
             )}
           </div>
         </div>
+
+        {mode === "view" && socials.length > 0 && (
+          <div className="mb-10 flex items-center justify-center gap-4">
+            {socials
+              .filter((s) => s.url.trim())
+              .map((s) => (
+                <a
+                  key={s.id}
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={PLATFORM_LABELS[s.platform]}
+                  className="transition-transform hover:scale-110"
+                  style={{ color: theme.accentColor ?? sectionText }}
+                >
+                  <SocialIcon platform={s.platform} size={22} />
+                </a>
+              ))}
+          </div>
+        )}
+
+        {mode === "edit" && (
+          <div className="mb-10">
+            <div className="mb-2 text-xs uppercase tracking-wide opacity-60">Social links</div>
+            <div className="flex flex-col gap-2">
+              {socials.map((s) => (
+                <div
+                  key={s.id}
+                  className="flex items-center gap-2 rounded-md border border-current/20 bg-black/5 px-2 py-1"
+                >
+                  <SocialIcon platform={s.platform} size={16} />
+                  <select
+                    className="rounded bg-transparent px-1 text-sm outline-none"
+                    style={{ color: sectionText }}
+                    value={s.platform}
+                    onChange={(e) =>
+                      handleSocialChange(s.id, "platform", e.target.value as SocialPlatform)
+                    }
+                  >
+                    {SOCIAL_PLATFORMS.map((p) => (
+                      <option key={p} value={p}>
+                        {PLATFORM_LABELS[p]}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    className="flex-1 bg-transparent text-sm outline-none"
+                    placeholder="https://..."
+                    value={s.url}
+                    onChange={(e) => handleSocialChange(s.id, "url", e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="opacity-60 hover:opacity-100"
+                    onClick={() => handleDeleteSocial(s.id)}
+                    aria-label="Remove social"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={handleAddSocial}
+                className="inline-flex items-center justify-center gap-1 rounded-md border border-dashed border-current/30 px-3 py-1.5 text-xs opacity-70 hover:opacity-100"
+              >
+                <Plus size={14} /> Add social
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="inline-flex flex-col items-center gap-2">
           <a

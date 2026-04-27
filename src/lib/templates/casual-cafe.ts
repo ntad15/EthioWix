@@ -84,6 +84,7 @@ export const casualCafeTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "sl
         email: "hello@thegreenbean.com",
         bookingUrl: "#",
         bookingLabel: "Order Online",
+        socials: [],
       },
     },
   ],

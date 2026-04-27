@@ -87,6 +87,7 @@ export const saffronStayTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "s
         email: "hello@saffronandstone.com",
         bookingUrl: "#",
         bookingLabel: "Message Us",
+        socials: [],
       },
     },
   ],

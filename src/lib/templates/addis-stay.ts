@@ -87,6 +87,7 @@ export const addisStayTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "slu
         email: "stay@meskelhouse.com",
         bookingUrl: "#",
         bookingLabel: "Check Availability",
+        socials: [],
       },
     },
   ],

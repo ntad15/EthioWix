@@ -91,6 +91,23 @@ export const hoursSectionSchema = z.object({
   }),
 });
 
+export const SOCIAL_PLATFORMS = [
+  "instagram",
+  "youtube",
+  "tiktok",
+  "facebook",
+  "x",
+  "linkedin",
+  "whatsapp",
+  "telegram",
+] as const;
+
+export const socialLinkSchema = z.object({
+  id: z.string(),
+  platform: z.enum(SOCIAL_PLATFORMS),
+  url: z.string(),
+});
+
 export const contactSectionSchema = z.object({
   type: z.literal("contact"),
   id: z.string(),
@@ -102,6 +119,22 @@ export const contactSectionSchema = z.object({
     email: z.string(),
     bookingUrl: z.string(),
     bookingLabel: z.string(),
+    socials: z.array(socialLinkSchema).default([]),
+  }),
+});
+
+export const linkButtonSectionSchema = z.object({
+  type: z.literal("linkButton"),
+  id: z.string(),
+  label: z.string().optional(),
+  styleOverride: sectionStyleOverrideSchema,
+  data: z.object({
+    label: z.string(),
+    url: z.string(),
+    openInNewTab: z.boolean().default(true),
+    width: z.enum(["auto", "sm", "md", "lg", "full"]).default("md"),
+    height: z.enum(["sm", "md", "lg"]).default("md"),
+    alignment: z.enum(["left", "center", "right"]).default("center"),
   }),
 });
 
@@ -131,6 +164,7 @@ export const sectionSchema = z.discriminatedUnion("type", [
   menuSectionSchema,
   hoursSectionSchema,
   contactSectionSchema,
+  linkButtonSectionSchema,
 ]);
 
 // === Theme Schema ===
@@ -179,6 +213,9 @@ export type MenuSection = z.infer<typeof menuSectionSchema>;
 export type HourEntry = z.infer<typeof hourEntrySchema>;
 export type HoursSection = z.infer<typeof hoursSectionSchema>;
 export type ContactSection = z.infer<typeof contactSectionSchema>;
+export type SocialLink = z.infer<typeof socialLinkSchema>;
+export type SocialPlatform = (typeof SOCIAL_PLATFORMS)[number];
+export type LinkButtonSection = z.infer<typeof linkButtonSectionSchema>;
 export type Section = z.infer<typeof sectionSchema>;
 export type Theme = z.infer<typeof themeSchema>;
 export type SiteConfig = z.infer<typeof siteConfigSchema>;

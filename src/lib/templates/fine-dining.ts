@@ -87,6 +87,7 @@ export const fineDiningTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "sl
         email: "reservations@lamaisondoree.com",
         bookingUrl: "#",
         bookingLabel: "Book on OpenTable",
+        socials: [],
       },
     },
   ],

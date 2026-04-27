@@ -87,6 +87,7 @@ export const lulitSalonTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "sl
         email: "hello@lulitsalon.com",
         bookingUrl: "#",
         bookingLabel: "Schedule Online",
+        socials: [],
       },
     },
   ],

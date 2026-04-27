@@ -85,6 +85,7 @@ export const roseClaySpaTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "s
         email: "hello@adeywellness.com",
         bookingUrl: "#",
         bookingLabel: "Reserve a Time",
+        socials: [],
       },
     },
   ],

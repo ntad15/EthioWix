@@ -87,6 +87,7 @@ export const lensAndLightTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "
         email: "dawit@lensandlight.studio",
         bookingUrl: "#",
         bookingLabel: "Start a Conversation",
+        socials: [],
       },
     },
   ],

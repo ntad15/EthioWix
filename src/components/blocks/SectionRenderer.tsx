@@ -8,6 +8,7 @@ import { MenuBlock } from "./MenuBlock";
 import { HoursBlock } from "./HoursBlock";
 import { ContactBlock } from "./ContactBlock";
 import { NavBlock } from "./NavBlock";
+import { LinkButtonBlock } from "./LinkButtonBlock";
 
 interface SectionRendererProps {
   section: Section;
@@ -48,6 +49,8 @@ export function SectionRenderer({ section, theme, mode, onUpdate }: SectionRende
         return <HoursBlock section={section} theme={mergedTheme} mode={mode} onUpdate={onUpdate as never} />;
       case "contact":
         return <ContactBlock section={section} theme={mergedTheme} mode={mode} onUpdate={onUpdate as never} />;
+      case "linkButton":
+        return <LinkButtonBlock section={section} theme={mergedTheme} mode={mode} onUpdate={onUpdate as never} />;
       default:
         return null;
     }

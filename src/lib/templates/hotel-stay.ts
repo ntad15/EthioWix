@@ -88,6 +88,7 @@ export const hotelStayTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "slu
         email: "reservations@theazurehotel.com",
         bookingUrl: "#",
         bookingLabel: "Check Availability",
+        socials: [],
       },
     },
   ],

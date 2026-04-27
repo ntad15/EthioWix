@@ -137,6 +137,7 @@ const SECTION_TYPES: { type: SectionType; label: string }[] = [
   { type: "menu", label: "Menu / Services" },
   { type: "hours", label: "Hours & Location" },
   { type: "contact", label: "Contact / CTA" },
+  { type: "linkButton", label: "Link Button" },
 ];
 
 const ANIMATIONS: { value: Animation; label: string; description: string }[] = [

@@ -87,6 +87,7 @@ export const vintageBarberTemplate: Omit<SiteConfig, "id" | "userId" | "name" | 
         email: "shop@kebedeandsons.com",
         bookingUrl: "#",
         bookingLabel: "Reserve a Time",
+        socials: [],
       },
     },
   ],

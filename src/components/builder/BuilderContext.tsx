@@ -198,7 +198,9 @@ function createEmptySection(type: SectionType): Section {
     case "hours":
       return { type: "hours", id, data: { heading: "Hours & Location", address: "Your address", schedule: [{ day: "Monday - Friday", hours: "9:00 AM - 5:00 PM" }] } };
     case "contact":
-      return { type: "contact", id, data: { heading: "Contact", phone: "", email: "", bookingUrl: "", bookingLabel: "Get in Touch" } };
+      return { type: "contact", id, data: { heading: "Contact", phone: "", email: "", bookingUrl: "", bookingLabel: "Get in Touch", socials: [] } };
+    case "linkButton":
+      return { type: "linkButton", id, data: { label: "Click here", url: "", openInNewTab: true, width: "md", height: "md", alignment: "center" } };
   }
 }
 

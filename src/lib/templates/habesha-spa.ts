@@ -87,6 +87,7 @@ export const habeshaSpaTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "sl
         email: "hello@bunaspa.et",
         bookingUrl: "#",
         bookingLabel: "Book a Session",
+        socials: [],
       },
     },
   ],

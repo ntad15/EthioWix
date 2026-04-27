@@ -87,6 +87,7 @@ export const enatStudioTemplate: Omit<SiteConfig, "id" | "userId" | "name" | "sl
         email: "selam@enatstudio.co",
         bookingUrl: "#",
         bookingLabel: "Inquire",
+        socials: [],
       },
     },
   ],
