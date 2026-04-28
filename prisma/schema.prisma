@@ -8,17 +8,14 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(cuid())
-  clerkId       String         @unique
-  email         String         @unique
-  name          String?
-  plan          Plan           @default(FREE)
-  sites         Site[]
-  domains       Domain[]
-  domainOrders  DomainOrder[]
-  paymentMethod PaymentMethod?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String   @unique
+  name      String?
+  plan      Plan     @default(FREE)
+  sites     Site[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Site {
@@ -30,66 +27,8 @@ model Site {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   analytics Analytics[]
-  domains   Domain[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
-
-model Domain {
-  id             String        @id @default(cuid())
-  name           String        @unique
-  tld            String
-  siteId         String?
-  site           Site?         @relation(fields: [siteId], references: [id])
-  userId         String
-  user           User          @relation(fields: [userId], references: [id])
-  source         DomainSource
-  status         DomainStatus
-  registeredAt   DateTime?
-  expiresAt      DateTime?
-  autoRenew      Boolean       @default(true)
-  porkbunOrderId String?
-  ownerName      String?
-  ownerEmail     String?
-  ownerPhone     String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  orders         DomainOrder[]
-
-  @@index([siteId])
-  @@index([userId])
-}
-
-model DomainOrder {
-  id            String      @id @default(cuid())
-  domainId      String?
-  domain        Domain?     @relation(fields: [domainId], references: [id])
-  userId        String
-  user          User        @relation(fields: [userId], references: [id])
-  domainName    String
-  tld           String
-  priceBirr     Int
-  years         Int         @default(1)
-  kind          OrderKind
-  status        OrderStatus
-  chapaTxRef    String      @unique
-  chapaChargeId String?
-  failureReason String?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-
-  @@index([userId])
-  @@index([domainId])
-}
-
-model PaymentMethod {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  user            User     @relation(fields: [userId], references: [id])
-  chapaCustomerId String
-  cardLast4       String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
 }
 
 model Analytics {
@@ -104,29 +43,4 @@ model Analytics {
 enum Plan {
   FREE
   PRO
-}
-
-enum DomainSource {
-  REGISTERED
-  EXTERNAL
-}
-
-enum DomainStatus {
-  PENDING
-  ACTIVE
-  EXPIRED
-  FAILED
-}
-
-enum OrderKind {
-  INITIAL
-  RENEWAL
-}
-
-enum OrderStatus {
-  PENDING_PAYMENT
-  PAID
-  REGISTERED
-  REFUNDED
-  FAILED
 }

@@ -281,6 +281,13 @@ export function DashboardHome() {
                     >
                       <Edit size={14} /> Edit
                     </Link>
+                    <Link
+                      href={`/settings/domain?siteId=${site.id}`}
+                      className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-soft-border py-2 text-[13px] font-medium text-ink no-underline hover:bg-cream"
+                      title="Connect a domain"
+                    >
+                      <Globe size={14} /> Domain
+                    </Link>
                     {site.published && (
                       <Link
                         href={siteUrl(site.slug)}
