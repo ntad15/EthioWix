@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     firstName: body.ownerContact.name.split(" ")[0],
     lastName: body.ownerContact.name.split(" ").slice(1).join(" ") || body.ownerContact.name,
     callbackUrl: `${origin}/api/webhooks/chapa`,
-    returnUrl: `${origin}/settings/domain?order=${order.id}`,
+    returnUrl: `${origin}/settings/domain?${body.siteId ? `siteId=${body.siteId}&` : ""}order=${order.id}`,
     customTitle: `Domain: ${normalized}`,
   });
 

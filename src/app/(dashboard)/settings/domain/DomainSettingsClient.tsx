@@ -34,6 +34,7 @@ export default function DomainSettingsClient() {
 function DomainSettingsInner() {
   const searchParams = useSearchParams();
   const siteId = searchParams.get("siteId");
+  const orderId = searchParams.get("order");
   const [tab, setTab] = useState<Tab>("buy");
   const [site, setSite] = useState<SiteSummary | null>(null);
   const [siteError, setSiteError] = useState<string | null>(null);
@@ -49,7 +50,7 @@ function DomainSettingsInner() {
       .catch(() => setSiteError("Could not load site"));
   }, [siteId]);
 
-  if (!siteId) {
+  if (!siteId && !orderId) {
     return (
       <div className="mt-8 rounded-lg border border-amber-300 bg-amber-50 p-5 text-sm text-amber-900">
         <p className="font-medium">Pick a site first.</p>
@@ -60,6 +61,20 @@ function DomainSettingsInner() {
         <Link
           href="/"
           className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-amber-900 underline"
+        >
+          <ArrowLeft size={12} /> Back to dashboard
+        </Link>
+      </div>
+    );
+  }
+
+  if (!siteId && orderId) {
+    return (
+      <div className="mt-2">
+        <OrderStatusBanner orderId={orderId} />
+        <Link
+          href="/"
+          className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-muted-ink underline"
         >
           <ArrowLeft size={12} /> Back to dashboard
         </Link>
@@ -82,6 +97,8 @@ function DomainSettingsInner() {
         )}
       </div>
 
+      {orderId && <OrderStatusBanner orderId={orderId} />}
+
       <div className="mt-6 flex gap-2 border-b border-ink/10">
         <TabBtn active={tab === "buy"} onClick={() => setTab("buy")}>
           Get a new domain
@@ -91,8 +108,178 @@ function DomainSettingsInner() {
         </TabBtn>
       </div>
       <div className="mt-6">
-        {tab === "buy" ? <BuyTab siteId={siteId} /> : <ByoTab siteId={siteId} />}
+        {tab === "buy" ? <BuyTab siteId={siteId!} /> : <ByoTab siteId={siteId!} />}
       </div>
+    </div>
+  );
+}
+
+type OrderState = {
+  id: string;
+  status: "PENDING_PAYMENT" | "PAID" | "REGISTERED" | "REFUNDED" | "FAILED";
+  failureReason: string | null;
+  domainName: string;
+  priceBirr: number;
+  domain: {
+    id: string;
+    name: string;
+    status: "PENDING" | "ACTIVE" | "EXPIRED" | "FAILED";
+    expiresAt: string | null;
+  } | null;
+};
+
+function OrderStatusBanner({ orderId }: { orderId: string }) {
+  const [order, setOrder] = useState<OrderState | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [pollCount, setPollCount] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    async function tick(attempt: number) {
+      try {
+        const res = await fetch(`/api/domains/orders/${orderId}`);
+        const data = await res.json();
+        if (cancelled) return;
+        if (!res.ok) {
+          setError(data.error ?? "Could not load order status");
+          return;
+        }
+        setOrder(data);
+        setPollCount(attempt);
+        const terminal =
+          data.status === "REGISTERED" ||
+          data.status === "REFUNDED" ||
+          data.status === "FAILED";
+        if (!terminal && attempt < 30) {
+          timer = setTimeout(() => tick(attempt + 1), 2000);
+        }
+      } catch {
+        if (!cancelled) setError("Could not load order status");
+      }
+    }
+
+    tick(0);
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [orderId]);
+
+  if (error) {
+    return (
+      <div className="mt-4 rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-900">
+        <p className="font-medium">Could not load order status</p>
+        <p className="mt-1 text-xs">{error}</p>
+      </div>
+    );
+  }
+
+  if (!order) {
+    return (
+      <div className="mt-4 rounded-lg border border-ink/10 bg-white p-4 text-sm text-muted-ink">
+        Loading order status…
+      </div>
+    );
+  }
+
+  const stalled = pollCount >= 30 && (order.status === "PENDING_PAYMENT" || order.status === "PAID");
+
+  if (order.status === "REGISTERED") {
+    return (
+      <div className="mt-4 rounded-lg border border-emerald-300 bg-emerald-50 p-5 text-sm text-emerald-900">
+        <p className="text-base font-semibold">🎉 Domain registered</p>
+        <p className="mt-1">
+          <strong>{order.domainName}</strong> is now connected to your site. DNS may take a few
+          minutes to propagate worldwide.
+        </p>
+        {order.domain?.expiresAt && (
+          <p className="mt-2 text-xs">
+            Expires {new Date(order.domain.expiresAt).toLocaleDateString()} · auto-renews from your
+            stored payment method.
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  if (order.status === "REFUNDED") {
+    return (
+      <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-5 text-sm text-amber-900">
+        <p className="text-base font-semibold">Refund issued</p>
+        <p className="mt-1">
+          We could not register <strong>{order.domainName}</strong> at the registry, so we refunded
+          your payment of {order.priceBirr.toLocaleString()} ETB.
+        </p>
+        {order.failureReason && (
+          <p className="mt-2 text-xs">
+            <span className="font-medium">Reason:</span> {order.failureReason}
+          </p>
+        )}
+        <p className="mt-2 text-xs">
+          The refund usually appears within 1-3 business days. You can try a different domain
+          below.
+        </p>
+      </div>
+    );
+  }
+
+  if (order.status === "FAILED") {
+    return (
+      <div className="mt-4 rounded-lg border border-red-300 bg-red-50 p-5 text-sm text-red-900">
+        <p className="text-base font-semibold">Something went wrong</p>
+        <p className="mt-1">
+          We couldn&apos;t register <strong>{order.domainName}</strong> and the automatic refund
+          also failed. Please contact support — we&apos;ll resolve this manually.
+        </p>
+        {order.failureReason && (
+          <p className="mt-2 text-xs">
+            <span className="font-medium">Details:</span> {order.failureReason}
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  if (order.status === "PAID") {
+    return (
+      <div className="mt-4 rounded-lg border border-blue-300 bg-blue-50 p-5 text-sm text-blue-900">
+        <p className="font-semibold">
+          <span className="mr-2 inline-block h-2 w-2 animate-pulse rounded-full bg-blue-600" />
+          Payment confirmed — registering domain…
+        </p>
+        <p className="mt-1 text-xs">
+          We&apos;re reaching out to the registry to set up <strong>{order.domainName}</strong>.
+          This usually takes 5-15 seconds.
+        </p>
+        {stalled && (
+          <p className="mt-2 text-xs">
+            Taking longer than expected. If this doesn&apos;t resolve in a minute, refresh the page
+            or contact support with order ID <code>{order.id.slice(0, 8)}</code>.
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  // PENDING_PAYMENT
+  return (
+    <div className="mt-4 rounded-lg border border-blue-300 bg-blue-50 p-5 text-sm text-blue-900">
+      <p className="font-semibold">
+        <span className="mr-2 inline-block h-2 w-2 animate-pulse rounded-full bg-blue-600" />
+        Confirming your payment with Chapa…
+      </p>
+      <p className="mt-1 text-xs">
+        Chapa is finalizing the transaction. This usually takes a few seconds.
+      </p>
+      {stalled && (
+        <p className="mt-2 text-xs">
+          Still waiting after a minute. If you completed payment, contact support with order ID{" "}
+          <code>{order.id.slice(0, 8)}</code>. If you cancelled, you can safely close this and try
+          again.
+        </p>
+      )}
     </div>
   );
 }
