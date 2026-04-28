@@ -168,6 +168,44 @@ export async function findActiveDomainByHost(host: string): Promise<Domain | nul
   return data ? rowToDomain(data) : null;
 }
 
+export async function listDomainsBySite(
+  siteId: string,
+  userId: string
+): Promise<Domain[]> {
+  const sb = await userClient();
+  const { data, error } = await sb
+    .from("domains")
+    .select("*")
+    .eq("site_id", siteId)
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map(rowToDomain);
+}
+
+export async function listOrdersBySite(
+  siteId: string,
+  userId: string
+): Promise<DomainOrder[]> {
+  const sb = adminClient();
+  const { data: domainRows, error: dErr } = await sb
+    .from("domains")
+    .select("id")
+    .eq("site_id", siteId)
+    .eq("user_id", userId);
+  if (dErr) throw dErr;
+  const domainIds = (domainRows ?? []).map((r) => r.id as string);
+  if (domainIds.length === 0) return [];
+  const { data, error } = await sb
+    .from("domain_orders")
+    .select("*")
+    .eq("user_id", userId)
+    .in("domain_id", domainIds)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map(rowToOrder);
+}
+
 export async function listExpiringRegisteredDomains(beforeIso: string): Promise<Domain[]> {
   const sb = adminClient();
   const { data, error } = await sb

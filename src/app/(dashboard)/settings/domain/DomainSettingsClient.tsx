@@ -99,6 +99,8 @@ function DomainSettingsInner() {
 
       {orderId && <OrderStatusBanner orderId={orderId} />}
 
+      <DomainActivity siteId={siteId!} />
+
       <div className="mt-6 flex gap-2 border-b border-ink/10">
         <TabBtn active={tab === "buy"} onClick={() => setTab("buy")}>
           Get a new domain
@@ -282,6 +284,219 @@ function OrderStatusBanner({ orderId }: { orderId: string }) {
       )}
     </div>
   );
+}
+
+type ActivityDomain = {
+  id: string;
+  name: string;
+  status: "PENDING" | "ACTIVE" | "EXPIRED" | "FAILED";
+  source: "REGISTERED" | "EXTERNAL";
+  registeredAt: string | null;
+  expiresAt: string | null;
+  autoRenew: boolean;
+};
+
+type ActivityOrder = {
+  id: string;
+  domainName: string;
+  kind: "INITIAL" | "RENEWAL";
+  status: "PENDING_PAYMENT" | "PAID" | "REGISTERED" | "REFUNDED" | "FAILED";
+  priceBirr: number;
+  failureReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type ActivityResponse = { domains: ActivityDomain[]; orders: ActivityOrder[] };
+
+function DomainActivity({ siteId }: { siteId: string }) {
+  const [data, setData] = useState<ActivityResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    async function load() {
+      try {
+        const res = await fetch(`/api/domains/list?siteId=${siteId}`, { cache: "no-store" });
+        const body = await res.json();
+        if (cancelled) return;
+        if (!res.ok) {
+          setError(body.error ?? "Could not load activity");
+          return;
+        }
+        setError(null);
+        setData(body);
+        const hasInProgress = (body.orders as ActivityOrder[]).some(
+          (o) => o.status === "PENDING_PAYMENT" || o.status === "PAID"
+        );
+        const hasPending = (body.domains as ActivityDomain[]).some((d) => d.status === "PENDING");
+        const interval = hasInProgress || hasPending ? 5000 : 30000;
+        timer = setTimeout(load, interval);
+      } catch {
+        if (!cancelled) setError("Could not load activity");
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [siteId]);
+
+  if (error) {
+    return (
+      <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-900">
+        {error}
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="mt-4 rounded-lg border border-ink/10 bg-white p-3 text-xs text-muted-ink">
+        Loading domain activity…
+      </div>
+    );
+  }
+
+  if (data.domains.length === 0 && data.orders.length === 0) return null;
+
+  return (
+    <div className="mt-4 rounded-lg border border-ink/10 bg-white">
+      <div className="border-b border-ink/10 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-ink">
+        Domain activity
+      </div>
+      <ul className="divide-y divide-ink/10">
+        {data.domains.map((d) => (
+          <DomainRow key={`d-${d.id}`} domain={d} />
+        ))}
+        {data.orders
+          .filter((o) => o.status !== "REGISTERED")
+          .map((o) => (
+            <OrderRow key={`o-${o.id}`} order={o} />
+          ))}
+      </ul>
+    </div>
+  );
+}
+
+function DomainRow({ domain }: { domain: ActivityDomain }) {
+  const label = domainLabel(domain);
+  return (
+    <li className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
+      <div className="min-w-0">
+        <div className="truncate font-medium">{domain.name}</div>
+        <div className="text-xs text-muted-ink">
+          {domain.source === "REGISTERED" ? "Registered through FetanSites" : "External domain"}
+          {domain.expiresAt && domain.status === "ACTIVE" && (
+            <> · expires {new Date(domain.expiresAt).toLocaleDateString()}</>
+          )}
+          {domain.status === "ACTIVE" && (
+            <> · auto-renew {domain.autoRenew ? "on" : "off"}</>
+          )}
+        </div>
+      </div>
+      <StatusPill tone={label.tone}>{label.text}</StatusPill>
+    </li>
+  );
+}
+
+function OrderRow({ order }: { order: ActivityOrder }) {
+  const label = orderLabel(order);
+  return (
+    <li className="px-4 py-3 text-sm">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className="truncate font-medium">{order.domainName}</div>
+          <div className="text-xs text-muted-ink">
+            {order.kind === "RENEWAL" ? "Renewal" : "New domain"} ·{" "}
+            {order.priceBirr.toLocaleString()} ETB · {timeAgo(order.createdAt)}
+          </div>
+        </div>
+        <StatusPill tone={label.tone}>{label.text}</StatusPill>
+      </div>
+      {label.detail && (
+        <p className="mt-2 text-xs text-muted-ink">{label.detail}</p>
+      )}
+      {order.failureReason && (order.status === "FAILED" || order.status === "REFUNDED") && (
+        <p className="mt-1 text-xs text-muted-ink">
+          <span className="font-medium">Reason:</span> {order.failureReason}
+        </p>
+      )}
+    </li>
+  );
+}
+
+type Tone = "green" | "blue" | "amber" | "red" | "gray";
+
+function StatusPill({ tone, children }: { tone: Tone; children: React.ReactNode }) {
+  const cls: Record<Tone, string> = {
+    green: "bg-emerald-100 text-emerald-900",
+    blue: "bg-blue-100 text-blue-900",
+    amber: "bg-amber-100 text-amber-900",
+    red: "bg-red-100 text-red-900",
+    gray: "bg-ink/10 text-ink",
+  };
+  return (
+    <span
+      className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${cls[tone]}`}
+    >
+      {children}
+    </span>
+  );
+}
+
+function domainLabel(d: ActivityDomain): { text: string; tone: Tone } {
+  if (d.status === "ACTIVE") return { text: "Active", tone: "green" };
+  if (d.status === "PENDING") return { text: "Setting up", tone: "blue" };
+  if (d.status === "EXPIRED") return { text: "Expired", tone: "amber" };
+  return { text: "Failed", tone: "red" };
+}
+
+function orderLabel(o: ActivityOrder): { text: string; tone: Tone; detail?: string } {
+  switch (o.status) {
+    case "PENDING_PAYMENT":
+      return {
+        text: "Awaiting payment",
+        tone: "blue",
+        detail: "Waiting for Chapa to confirm your payment.",
+      };
+    case "PAID":
+      return {
+        text: "Registering",
+        tone: "blue",
+        detail: "Payment confirmed. Setting up the domain at the registry.",
+      };
+    case "REGISTERED":
+      return { text: "Done", tone: "green" };
+    case "REFUNDED":
+      return {
+        text: "Refunded",
+        tone: "amber",
+        detail: "We could not register this domain, so we refunded your payment.",
+      };
+    case "FAILED":
+      return {
+        text: "Couldn't be set up",
+        tone: "red",
+        detail:
+          "We could not register this domain and the automatic refund did not go through. Please contact support and we'll resolve it.",
+      };
+  }
+}
+
+function timeAgo(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const min = Math.floor(diffMs / 60_000);
+  if (min < 1) return "just now";
+  if (min < 60) return `${min} min ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr} hr ago`;
+  const day = Math.floor(hr / 24);
+  return `${day} day${day === 1 ? "" : "s"} ago`;
 }
 
 function TabBtn({

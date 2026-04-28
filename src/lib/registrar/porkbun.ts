@@ -19,27 +19,46 @@ function getCreds() {
 }
 
 async function call<T>(path: string, body: Record<string, unknown> = {}): Promise<Result<T>> {
+  const url = `${PORKBUN_BASE}${path}`;
   let res: Response;
   try {
-    res = await fetch(`${PORKBUN_BASE}${path}`, {
+    res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...getCreds(), ...body }),
       cache: "no-store",
     });
   } catch (e) {
-    return { ok: false, code: "NETWORK", message: e instanceof Error ? e.message : "Network error" };
+    const message = e instanceof Error ? e.message : "Network error";
+    console.error("[porkbun] network error", { path, message });
+    return { ok: false, code: "NETWORK", message };
   }
 
+  const rawText = await res.text();
   let json: unknown;
   try {
-    json = await res.json();
+    json = JSON.parse(rawText);
   } catch {
+    console.error("[porkbun] non-JSON response", {
+      path,
+      status: res.status,
+      contentType: res.headers.get("content-type"),
+      bodyPreview: rawText.slice(0, 500),
+      requestBody: body,
+    });
     return { ok: false, code: "BAD_RESPONSE", message: `Non-JSON response (${res.status})` };
   }
 
   const obj = json as { status?: string; message?: string };
   if (obj.status !== "SUCCESS") {
+    console.error("[porkbun] api error", {
+      path,
+      httpStatus: res.status,
+      apiStatus: obj.status,
+      apiMessage: obj.message,
+      requestBody: body,
+      responseBody: json,
+    });
     return {
       ok: false,
       code: res.ok ? "API_ERROR" : `HTTP_${res.status}`,

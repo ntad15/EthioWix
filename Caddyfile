@@ -11,6 +11,11 @@
 
 	encode gzip
 
+	log {
+		output stdout
+		format console
+	}
+
 	header {
 		X-Content-Type-Options "nosniff"
 		X-Frame-Options "DENY"
@@ -28,6 +33,11 @@
 	reverse_proxy app:3000
 
 	encode gzip
+
+	log {
+		output stdout
+		format console
+	}
 
 	header {
 		X-Content-Type-Options "nosniff"

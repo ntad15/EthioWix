@@ -50,6 +50,10 @@ export async function middleware(request: NextRequest) {
   const host = request.headers.get("host") ?? "";
   const domain = process.env.DOMAIN ?? "localhost";
 
+  console.log(
+    `[req] ${request.method} ${host}${request.nextUrl.pathname}${request.nextUrl.search}`
+  );
+
   // --- Subdomain routing (always public) ---
   let subdomain: string | null = null;
 
