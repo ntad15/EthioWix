@@ -24,15 +24,30 @@ export async function POST(
     const v = await verify(order.chapaTxRef);
     if (!v.ok) {
       return NextResponse.json(
-        { status: order.status, message: `Chapa verify failed: ${v.message}` },
+        { status: order.status, message: `Could not reach Chapa to verify payment: ${v.message}` },
+        { status: 200 }
+      );
+    }
+    if (v.data.status === "pending") {
+      return NextResponse.json(
+        { status: order.status, message: "Chapa is still processing your payment. Try again in a moment." },
         { status: 200 }
       );
     }
     if (v.data.status !== "success") {
-      return NextResponse.json(
-        { status: order.status, message: `Payment not yet confirmed (${v.data.status})` },
-        { status: 200 }
+      await updateDomainOrder(
+        order.id,
+        {
+          status: "FAILED",
+          failureReason: `Payment was not successful at Chapa (status: ${v.data.status}).`,
+        },
+        { admin: true }
       );
+      const failed = await getDomainOrderById(order.id);
+      return NextResponse.json({
+        status: failed?.status,
+        failureReason: failed?.failureReason ?? null,
+      });
     }
     await updateDomainOrder(
       order.id,

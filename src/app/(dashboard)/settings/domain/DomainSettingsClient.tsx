@@ -133,46 +133,63 @@ type OrderState = {
 function OrderStatusBanner({ orderId }: { orderId: string }) {
   const [order, setOrder] = useState<OrderState | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [pollCount, setPollCount] = useState(0);
+  const [registering, setRegistering] = useState(false);
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
+
+  async function loadOrder() {
+    try {
+      const res = await fetch(`/api/domains/orders/${orderId}`, { cache: "no-store" });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Could not load order status");
+        return null;
+      }
+      setOrder(data);
+      return data as OrderState;
+    } catch {
+      setError("Could not load order status");
+      return null;
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | null = null;
 
-    // Kick off finalize first — does verify+register server-side. Don't await; polling
-    // below will see the result either way. This makes the webhook a safety net rather
-    // than a single point of failure.
-    fetch(`/api/domains/orders/${orderId}/finalize`, { method: "POST" }).catch(() => {});
-
-    async function tick(attempt: number) {
-      try {
-        const res = await fetch(`/api/domains/orders/${orderId}`);
-        const data = await res.json();
-        if (cancelled) return;
-        if (!res.ok) {
-          setError(data.error ?? "Could not load order status");
-          return;
-        }
-        setOrder(data);
-        setPollCount(attempt);
-        const terminal =
-          data.status === "REGISTERED" ||
-          data.status === "REFUNDED" ||
-          data.status === "FAILED";
-        if (!terminal && attempt < 30) {
-          timer = setTimeout(() => tick(attempt + 1), 2000);
-        }
-      } catch {
-        if (!cancelled) setError("Could not load order status");
+    async function poll() {
+      const data = await loadOrder();
+      if (cancelled) return;
+      // Auto-poll only while registration is in-flight on the server (PAID waiting for
+      // Porkbun). PENDING_PAYMENT and terminal states don't change without user action.
+      if (data?.status === "PAID") {
+        timer = setTimeout(poll, 3000);
       }
     }
 
-    tick(0);
+    poll();
     return () => {
       cancelled = true;
       if (timer) clearTimeout(timer);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId]);
+
+  async function handleRegister() {
+    setRegistering(true);
+    setPendingMessage(null);
+    try {
+      const res = await fetch(`/api/domains/orders/${orderId}/finalize`, { method: "POST" });
+      const body = await res.json().catch(() => ({}));
+      if (body?.message && body?.status === "PENDING_PAYMENT") {
+        setPendingMessage(body.message as string);
+      }
+    } catch {
+      setPendingMessage("Could not reach the server. Please try again.");
+    } finally {
+      await loadOrder();
+      setRegistering(false);
+    }
+  }
 
   if (error) {
     return (
@@ -190,8 +207,6 @@ function OrderStatusBanner({ orderId }: { orderId: string }) {
       </div>
     );
   }
-
-  const stalled = pollCount >= 30 && (order.status === "PENDING_PAYMENT" || order.status === "PAID");
 
   if (order.status === "REGISTERED") {
     return (
@@ -260,31 +275,34 @@ function OrderStatusBanner({ orderId }: { orderId: string }) {
           We&apos;re reaching out to the registry to set up <strong>{order.domainName}</strong>.
           This usually takes 5-15 seconds.
         </p>
-        {stalled && (
-          <p className="mt-2 text-xs">
-            Taking longer than expected. If this doesn&apos;t resolve in a minute, refresh the page
-            or contact support with order ID <code>{order.id.slice(0, 8)}</code>.
-          </p>
-        )}
       </div>
     );
   }
 
-  // PENDING_PAYMENT
+  // PENDING_PAYMENT — user must click to verify the Chapa transaction and trigger
+  // registration. We no longer auto-fire on mount because that hid failures behind
+  // silent retries. The user presses the button, sees the result.
   return (
     <div className="mt-4 rounded-lg border border-blue-300 bg-blue-50 p-5 text-sm text-blue-900">
-      <p className="font-semibold">
-        <span className="mr-2 inline-block h-2 w-2 animate-pulse rounded-full bg-blue-600" />
-        Confirming your payment with Chapa…
-      </p>
+      <p className="text-base font-semibold">Finish setting up {order.domainName}</p>
       <p className="mt-1 text-xs">
-        Chapa is finalizing the transaction. This usually takes a few seconds.
+        If you completed payment with Chapa, click below to confirm the transaction and register
+        your domain. If the payment failed or was cancelled, you&apos;ll see that here too.
       </p>
-      {stalled && (
-        <p className="mt-2 text-xs">
-          Still waiting after a minute. If you completed payment, contact support with order ID{" "}
-          <code>{order.id.slice(0, 8)}</code>. If you cancelled, you can safely close this and try
-          again.
+      <button
+        type="button"
+        onClick={handleRegister}
+        disabled={registering}
+        className="mt-3 inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {registering && (
+          <span className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+        )}
+        {registering ? "Confirming with Chapa…" : "Confirm payment & register domain"}
+      </button>
+      {pendingMessage && (
+        <p className="mt-3 text-xs">
+          <span className="font-medium">Status:</span> {pendingMessage}
         </p>
       )}
     </div>
