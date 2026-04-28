@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUserId } from "@/lib/domains/auth";
 import { getDomainOrderById, updateDomainOrder } from "@/lib/db/domain-store";
-import { verify } from "@/lib/payments/chapa";
+import { getEvents, classifyEvents } from "@/lib/payments/chapa";
 import { registerDomainForOrder } from "@/lib/jobs/registerDomain";
 
 // User-triggered finalize: called by the dashboard when the browser lands back from Chapa.
@@ -21,25 +21,32 @@ export async function POST(
   }
 
   if (order.status === "PENDING_PAYMENT") {
-    const v = await verify(order.chapaTxRef);
-    if (!v.ok) {
+    const e = await getEvents(order.chapaTxRef);
+    if (!e.ok) {
       return NextResponse.json(
-        { status: order.status, message: `Could not reach Chapa to verify payment: ${v.message}` },
+        { status: order.status, message: `Could not reach Chapa to fetch transaction events: ${e.message}` },
         { status: 200 }
       );
     }
-    if (v.data.status === "pending") {
+    const verdict = classifyEvents(e.data);
+    if (verdict === "pending") {
       return NextResponse.json(
-        { status: order.status, message: "Chapa is still processing your payment. Try again in a moment." },
+        {
+          status: order.status,
+          message: "Chapa hasn't confirmed your payment yet. Please wait a moment and try again.",
+        },
         { status: 200 }
       );
     }
-    if (v.data.status !== "success") {
+    if (verdict === "failed") {
+      const reason = e.data.find((ev) => typeof ev.message === "string")?.message;
       await updateDomainOrder(
         order.id,
         {
           status: "FAILED",
-          failureReason: `Payment was not successful at Chapa (status: ${v.data.status}).`,
+          failureReason: reason
+            ? `Payment was not successful at Chapa: ${reason}`
+            : "Payment was not successful at Chapa.",
         },
         { admin: true }
       );
@@ -49,9 +56,10 @@ export async function POST(
         failureReason: failed?.failureReason ?? null,
       });
     }
+    // verdict === "success"
     await updateDomainOrder(
       order.id,
-      { status: "PAID", chapaChargeId: v.data.chargeId },
+      { status: "PAID", chapaChargeId: order.chapaTxRef },
       { admin: true }
     );
   }

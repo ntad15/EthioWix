@@ -130,6 +130,38 @@ export async function chargeToken(args: ChargeTokenArgs): Promise<Result<{ charg
   return { ok: true, data: { chargeId: r.data.reference ?? r.data.tx_ref ?? args.txRef } };
 }
 
+export type TransactionEvent = {
+  item?: number;
+  message: string;
+  type?: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
+// Fetches the per-transaction event log from Chapa. We use this instead of /verify
+// because some payments (e.g. telebirr) settle via events even when /verify still
+// reports the txRef as pending or unknown.
+export async function getEvents(txRef: string): Promise<Result<TransactionEvent[]>> {
+  return call<TransactionEvent[]>(`/transaction/events/${txRef}`, { method: "GET" });
+}
+
+// Heuristic: scan the event log for terminal-success or terminal-failure markers.
+// Chapa's event messages look like:
+//   "Transaction is successful with TELEBIRR - RSLT"
+//   "Payment failed", "Payment cancelled", "Transaction expired"
+const SUCCESS_RE = /\bsuccessful\b|\bsuccess\b/i;
+const FAILURE_RE = /\bfailed\b|\bcancel(?:led|ed)?\b|\bdeclined\b|\bexpired\b|\brefused\b/i;
+
+export type EventVerdict = "success" | "failed" | "pending";
+
+export function classifyEvents(events: TransactionEvent[]): EventVerdict {
+  const hasSuccess = events.some((e) => typeof e.message === "string" && SUCCESS_RE.test(e.message));
+  if (hasSuccess) return "success";
+  const hasFailure = events.some((e) => typeof e.message === "string" && FAILURE_RE.test(e.message));
+  if (hasFailure) return "failed";
+  return "pending";
+}
+
 export async function refund(txRef: string, reason?: string): Promise<Result<{ refundId: string }>> {
   type Raw = { refund_id?: string; reference?: string };
   const r = await call<Raw>(`/refund/${txRef}`, {

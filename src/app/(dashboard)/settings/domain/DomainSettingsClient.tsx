@@ -335,6 +335,7 @@ type ActivityResponse = { domains: ActivityDomain[]; orders: ActivityOrder[] };
 function DomainActivity({ siteId }: { siteId: string }) {
   const [data, setData] = useState<ActivityResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [refreshTick, setRefreshTick] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -351,9 +352,7 @@ function DomainActivity({ siteId }: { siteId: string }) {
         }
         setError(null);
         setData(body);
-        const hasInProgress = (body.orders as ActivityOrder[]).some(
-          (o) => o.status === "PENDING_PAYMENT" || o.status === "PAID"
-        );
+        const hasInProgress = (body.orders as ActivityOrder[]).some((o) => o.status === "PAID");
         const hasPending = (body.domains as ActivityDomain[]).some((d) => d.status === "PENDING");
         const interval = hasInProgress || hasPending ? 5000 : 30000;
         timer = setTimeout(load, interval);
@@ -367,7 +366,9 @@ function DomainActivity({ siteId }: { siteId: string }) {
       cancelled = true;
       if (timer) clearTimeout(timer);
     };
-  }, [siteId]);
+  }, [siteId, refreshTick]);
+
+  const refresh = () => setRefreshTick((n) => n + 1);
 
   if (error) {
     return (
@@ -399,7 +400,7 @@ function DomainActivity({ siteId }: { siteId: string }) {
         {data.orders
           .filter((o) => o.status !== "REGISTERED")
           .map((o) => (
-            <OrderRow key={`o-${o.id}`} order={o} />
+            <OrderRow key={`o-${o.id}`} order={o} onChanged={refresh} />
           ))}
       </ul>
     </div>
@@ -427,8 +428,28 @@ function DomainRow({ domain }: { domain: ActivityDomain }) {
   );
 }
 
-function OrderRow({ order }: { order: ActivityOrder }) {
+function OrderRow({ order, onChanged }: { order: ActivityOrder; onChanged: () => void }) {
   const label = orderLabel(order);
+  const [busy, setBusy] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  async function finalize() {
+    setBusy(true);
+    setStatusMessage(null);
+    try {
+      const res = await fetch(`/api/domains/orders/${order.id}/finalize`, { method: "POST" });
+      const body = await res.json().catch(() => ({}));
+      if (body?.message && body?.status === "PENDING_PAYMENT") {
+        setStatusMessage(body.message as string);
+      }
+    } catch {
+      setStatusMessage("Could not reach the server. Please try again.");
+    } finally {
+      onChanged();
+      setBusy(false);
+    }
+  }
+
   return (
     <li className="px-4 py-3 text-sm">
       <div className="flex items-center justify-between gap-3">
@@ -448,6 +469,24 @@ function OrderRow({ order }: { order: ActivityOrder }) {
         <p className="mt-1 text-xs text-muted-ink">
           <span className="font-medium">Reason:</span> {order.failureReason}
         </p>
+      )}
+      {order.status === "PENDING_PAYMENT" && (
+        <div className="mt-2">
+          <button
+            type="button"
+            onClick={finalize}
+            disabled={busy}
+            className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {busy && (
+              <span className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            )}
+            {busy ? "Confirming with Chapa…" : "Confirm payment & register"}
+          </button>
+          {statusMessage && (
+            <p className="mt-2 text-xs text-muted-ink">{statusMessage}</p>
+          )}
+        </div>
       )}
     </li>
   );
