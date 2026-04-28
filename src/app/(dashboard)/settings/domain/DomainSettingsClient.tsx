@@ -139,6 +139,11 @@ function OrderStatusBanner({ orderId }: { orderId: string }) {
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | null = null;
 
+    // Kick off finalize first — does verify+register server-side. Don't await; polling
+    // below will see the result either way. This makes the webhook a safety net rather
+    // than a single point of failure.
+    fetch(`/api/domains/orders/${orderId}/finalize`, { method: "POST" }).catch(() => {});
+
     async function tick(attempt: number) {
       try {
         const res = await fetch(`/api/domains/orders/${orderId}`);
