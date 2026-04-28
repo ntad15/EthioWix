@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
-const PUBLIC_PATHS = ["/sign-in", "/sign-up", "/auth/callback", "/sites/", "/api/internal/"];
+const PUBLIC_PATHS = [
+  "/sign-in",
+  "/sign-up",
+  "/auth/callback",
+  "/sites/",
+  "/api/internal/",
+  "/api/webhooks/",
+  "/api/cron/",
+  "/api/domains/orders/resume",
+];
 
 function isPublicPath(pathname: string): boolean {
   if (pathname === "/") return true;
