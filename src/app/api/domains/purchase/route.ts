@@ -60,7 +60,11 @@ export async function POST(request: NextRequest) {
     { admin: true }
   );
 
-  const origin = request.nextUrl.origin;
+  // Behind a reverse proxy (Caddy), nextUrl.origin reflects the internal listen address.
+  // Read the forwarded headers so the URL we hand Chapa is what the browser actually sees.
+  const proto = request.headers.get("x-forwarded-proto") ?? request.nextUrl.protocol.replace(/:$/, "");
+  const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? request.nextUrl.host;
+  const origin = `${proto}://${host}`;
   const init = await initialize({
     amountBirr: priceBirr,
     txRef,
