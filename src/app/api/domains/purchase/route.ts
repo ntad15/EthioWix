@@ -47,15 +47,18 @@ export async function POST(request: NextRequest) {
   const priceBirr = getPriceBirr(split.tld);
   const txRef = `dom_${crypto.randomBytes(12).toString("hex")}`;
 
-  const order = await createDomainOrder({
-    userId,
-    domainName: normalized,
-    tld: split.tld,
-    priceBirr,
-    kind: "INITIAL",
-    status: "PENDING_PAYMENT",
-    chapaTxRef: txRef,
-  });
+  const order = await createDomainOrder(
+    {
+      userId,
+      domainName: normalized,
+      tld: split.tld,
+      priceBirr,
+      kind: "INITIAL",
+      status: "PENDING_PAYMENT",
+      chapaTxRef: txRef,
+    },
+    { admin: true }
+  );
 
   const origin = request.nextUrl.origin;
   const init = await initialize({
