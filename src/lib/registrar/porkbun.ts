@@ -9,6 +9,10 @@ import type {
 
 const PORKBUN_BASE = "https://api.porkbun.com/api/json/v3";
 
+function domainPath(domain: string): string {
+  return encodeURIComponent(domain.trim().toLowerCase());
+}
+
 function getCreds() {
   const apikey = process.env.PORKBUN_API_KEY;
   const secretapikey = process.env.PORKBUN_SECRET_API_KEY;
@@ -80,7 +84,7 @@ export async function checkDomain(domain: string): Promise<Result<CheckDomainRes
   type Raw = {
     response: { avail: "yes" | "no"; premium: "yes" | "no"; price?: string };
   };
-  const r = await call<Raw>(`/domain/checkDomain/${domain}`);
+  const r = await call<Raw>(`/domain/checkDomain/${domainPath(domain)}`);
   if (!r.ok) return r;
   return {
     ok: true,
@@ -92,52 +96,90 @@ export async function checkDomain(domain: string): Promise<Result<CheckDomainRes
   };
 }
 
+function usdToPennies(usd: number | undefined): number | null {
+  if (!Number.isFinite(usd)) return null;
+  return Math.round((usd ?? 0) * 100);
+}
+
+function minimumExpiryDate(years = 1): string {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() + years);
+  return d.toISOString();
+}
+
 export async function createDomain(args: CreateDomainArgs): Promise<Result<CreateDomainResult>> {
-  type Raw = { domain?: string; expiry?: string; orderID?: string; orderId?: string };
-  const r = await call<Raw>("/domain/create", {
-    domain: args.domain,
-    years: args.years,
-    coupon: "",
-    whoisprivacy: args.enableWhoisPrivacy === false ? "0" : "1",
-    nameservers: [],
-    contact: {
-      first_name: args.contact.name.split(" ")[0] ?? args.contact.name,
-      last_name: args.contact.name.split(" ").slice(1).join(" ") || args.contact.name,
-      email: args.contact.email,
-      phone: args.contact.phone,
-      address1: args.contact.address1,
-      city: args.contact.city,
-      state: args.contact.state,
-      zip: args.contact.postalCode,
-      country: args.contact.country,
-    },
+  type Raw = {
+    domain?: string;
+    expirationDate?: string;
+    expireDate?: string;
+    orderId?: number | string;
+    orderID?: number | string;
+  };
+
+  const availability = await checkDomain(args.domain);
+  if (!availability.ok) return availability;
+  if (!availability.data.available) {
+    return { ok: false, code: "DOMAIN_NOT_AVAILABLE", message: "Domain is no longer available" };
+  }
+  if (availability.data.premium) {
+    return { ok: false, code: "PREMIUM_DOMAIN", message: "Premium domains are not supported" };
+  }
+
+  const cost = usdToPennies(availability.data.priceUsd);
+  if (cost === null) {
+    return {
+      ok: false,
+      code: "MISSING_COST",
+      message: "Porkbun did not return a registration price for this domain",
+    };
+  }
+
+  const r = await call<Raw>(`/domain/create/${domainPath(args.domain)}`, {
+    cost,
+    agreeToTerms: "yes",
   });
   if (!r.ok) return r;
   return {
     ok: true,
     data: {
-      porkbunOrderId: r.data.orderID ?? r.data.orderId ?? "",
-      expiresAt: r.data.expiry ?? "",
+      porkbunOrderId: String(r.data.orderId ?? r.data.orderID ?? ""),
+      expiresAt: r.data.expirationDate ?? r.data.expireDate ?? minimumExpiryDate(args.years),
     },
   };
 }
 
 export async function renewDomain(domain: string, years: number): Promise<Result<RenewDomainResult>> {
-  type Raw = { expiry?: string };
-  const r = await call<Raw>("/domain/renew", { domain, years });
+  type Raw = { expirationDate?: string; expireDate?: string };
+  const pricing = await getPricing();
+  if (!pricing.ok) return pricing;
+
+  const tld = domain.split(".").slice(1).join(".");
+  const renewalUsd = Number(pricing.data.pricing[tld]?.renewal);
+  const cost = usdToPennies(renewalUsd);
+  if (cost === null) {
+    return {
+      ok: false,
+      code: "MISSING_COST",
+      message: `Porkbun did not return a renewal price for .${tld}`,
+    };
+  }
+
+  const r = await call<Raw>(`/domain/renew/${domainPath(domain)}`, { cost });
   if (!r.ok) return r;
-  return { ok: true, data: { expiresAt: r.data.expiry ?? "" } };
+  return {
+    ok: true,
+    data: { expiresAt: r.data.expirationDate ?? r.data.expireDate ?? minimumExpiryDate(years) },
+  };
 }
 
 export async function createOrEditDnsRecord(
   domain: string,
   record: DnsRecord
 ): Promise<Result<{ id?: string }>> {
-  return call<{ id?: string }>(`/dns/createOrEdit/${domain}`, {
+  return call<{ id?: string }>(`/dns/createOrEdit/${domainPath(domain)}`, {
     type: record.type,
     name: record.name ?? "",
     content: record.content,
     ttl: String(record.ttl ?? 600),
   });
 }
-
