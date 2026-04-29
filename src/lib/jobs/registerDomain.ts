@@ -52,12 +52,32 @@ export async function registerDomainForOrder(orderId: string): Promise<void> {
   }
 
   // Point DNS at FetanSites edge. Apex A + www CNAME to apex.
-  await createOrEditDnsRecord(order.domainName, { type: "A", name: "", content: edgeIp });
-  await createOrEditDnsRecord(order.domainName, {
+  const apexRecord = await createOrEditDnsRecord(order.domainName, {
+    type: "A",
+    name: "",
+    content: edgeIp,
+  });
+  const wwwRecord = await createOrEditDnsRecord(order.domainName, {
     type: "CNAME",
     name: "www",
     content: order.domainName,
   });
+
+  if (!apexRecord.ok || !wwwRecord.ok) {
+    const failures = [
+      !apexRecord.ok ? `apex A: ${apexRecord.message}` : null,
+      !wwwRecord.ok ? `www CNAME: ${wwwRecord.message}` : null,
+    ].filter(Boolean);
+    await updateDomainOrder(
+      order.id,
+      { status: "FAILED", failureReason: `Porkbun DNS setup failed: ${failures.join("; ")}` },
+      { admin: true }
+    );
+    if (order.domainId) {
+      await updateDomain(order.domainId, { status: "FAILED" }, { admin: true });
+    }
+    return;
+  }
 
   const expiresAt = create.data.expiresAt ? new Date(create.data.expiresAt) : null;
 

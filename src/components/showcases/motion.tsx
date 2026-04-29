@@ -30,8 +30,14 @@ export function Reveal({
     );
     io.observe(el);
     const rect = el.getBoundingClientRect();
-    if (rect.top < window.innerHeight) setShown(true);
-    return () => io.disconnect();
+    const timer =
+      rect.top < window.innerHeight
+        ? window.setTimeout(() => setShown(true), 0)
+        : null;
+    return () => {
+      if (timer) window.clearTimeout(timer);
+      io.disconnect();
+    };
   }, []);
 
   return (

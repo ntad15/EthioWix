@@ -17,8 +17,8 @@ export function ScrollReveal({ children, delay = 0 }: ScrollRevealProps) {
     ).matches;
 
     if (prefersReducedMotion) {
-      setIsVisible(true);
-      return;
+      const timer = window.setTimeout(() => setIsVisible(true), 0);
+      return () => window.clearTimeout(timer);
     }
 
     const observer = new IntersectionObserver(

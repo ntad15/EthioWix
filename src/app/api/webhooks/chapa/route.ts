@@ -6,6 +6,10 @@ import {
 import { verify, verifyWebhookSignature } from "@/lib/payments/chapa";
 import { registerDomainForOrder } from "@/lib/jobs/registerDomain";
 
+function amountsMatch(actual: number, expected: number): boolean {
+  return Number.isFinite(actual) && Math.abs(actual - expected) < 0.01;
+}
+
 export async function POST(request: NextRequest) {
   const raw = await request.text();
   const sig =
@@ -42,6 +46,17 @@ export async function POST(request: NextRequest) {
       {
         status: "FAILED",
         failureReason: v.ok ? `Chapa verify status: ${v.data.status}` : `Chapa verify: ${v.message}`,
+      },
+      { admin: true }
+    );
+    return NextResponse.json({ ok: false }, { status: 200 });
+  }
+  if (!amountsMatch(v.data.amountBirr, order.priceBirr)) {
+    await updateDomainOrder(
+      order.id,
+      {
+        status: "FAILED",
+        failureReason: `Chapa amount mismatch: expected ${order.priceBirr} ETB, got ${v.data.amountBirr} ETB`,
       },
       { admin: true }
     );

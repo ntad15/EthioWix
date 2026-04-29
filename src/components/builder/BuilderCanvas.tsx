@@ -28,6 +28,13 @@ export function BuilderCanvas() {
   const { state, dispatch } = useBuilder();
   const { siteConfig, selectedSectionId } = state;
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   if (isShowcaseTemplate(siteConfig.templateId)) {
     return (
       <div className="min-h-screen">
@@ -41,13 +48,6 @@ export function BuilderCanvas() {
       </div>
     );
   }
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;

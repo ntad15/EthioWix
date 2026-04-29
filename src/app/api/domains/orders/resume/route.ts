@@ -3,6 +3,10 @@ import { getDomainOrderById, updateDomainOrder } from "@/lib/db/domain-store";
 import { verify } from "@/lib/payments/chapa";
 import { registerDomainForOrder } from "@/lib/jobs/registerDomain";
 
+function amountsMatch(actual: number, expected: number): boolean {
+  return Number.isFinite(actual) && Math.abs(actual - expected) < 0.01;
+}
+
 // Manual recovery for orders stuck because the Chapa webhook never reached us
 // (server was down, Chapa account doesn't expose webhook resend, etc).
 // Verifies payment with Chapa server-side, advances PENDING_PAYMENT → PAID,
@@ -33,6 +37,17 @@ export async function POST(request: NextRequest) {
         { error: `Chapa says status=${v.data.status} — payment not complete` },
         { status: 409 }
       );
+    }
+    if (!amountsMatch(v.data.amountBirr, order.priceBirr)) {
+      await updateDomainOrder(
+        order.id,
+        {
+          status: "FAILED",
+          failureReason: `Chapa amount mismatch: expected ${order.priceBirr} ETB, got ${v.data.amountBirr} ETB`,
+        },
+        { admin: true }
+      );
+      return NextResponse.json({ error: "Chapa amount did not match order amount" }, { status: 409 });
     }
     await updateDomainOrder(
       order.id,

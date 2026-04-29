@@ -180,13 +180,18 @@ function OrderStatusBanner({ orderId }: { orderId: string }) {
     try {
       const res = await fetch(`/api/domains/orders/${orderId}/finalize`, { method: "POST" });
       const body = await res.json().catch(() => ({}));
-      if (body?.message && body?.status === "PENDING_PAYMENT") {
+      if (!res.ok) {
+        setPendingMessage(body?.error ?? "Could not confirm payment. Please try again.");
+      } else if (body?.message) {
         setPendingMessage(body.message as string);
+      } else if (body?.failureReason) {
+        setPendingMessage(body.failureReason as string);
       }
     } catch {
       setPendingMessage("Could not reach the server. Please try again.");
     } finally {
       await loadOrder();
+      window.dispatchEvent(new Event("domain-activity-refresh"));
       setRegistering(false);
     }
   }
@@ -370,6 +375,12 @@ function DomainActivity({ siteId }: { siteId: string }) {
 
   const refresh = () => setRefreshTick((n) => n + 1);
 
+  useEffect(() => {
+    const refreshActivity = () => setRefreshTick((n) => n + 1);
+    window.addEventListener("domain-activity-refresh", refreshActivity);
+    return () => window.removeEventListener("domain-activity-refresh", refreshActivity);
+  }, []);
+
   if (error) {
     return (
       <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-900">
@@ -439,8 +450,12 @@ function OrderRow({ order, onChanged }: { order: ActivityOrder; onChanged: () =>
     try {
       const res = await fetch(`/api/domains/orders/${order.id}/finalize`, { method: "POST" });
       const body = await res.json().catch(() => ({}));
-      if (body?.message && body?.status === "PENDING_PAYMENT") {
+      if (!res.ok) {
+        setStatusMessage(body?.error ?? "Could not confirm payment. Please try again.");
+      } else if (body?.message) {
         setStatusMessage(body.message as string);
+      } else if (body?.failureReason) {
+        setStatusMessage(body.failureReason as string);
       }
     } catch {
       setStatusMessage("Could not reach the server. Please try again.");

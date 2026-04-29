@@ -5,6 +5,7 @@ import { isValidLabel, normalizeDomain, splitDomain, isSupportedTld } from "@/li
 import { checkDomain } from "@/lib/registrar/porkbun";
 import { getPriceBirr } from "@/lib/domains/pricing";
 import { initialize } from "@/lib/payments/chapa";
+import { assertOwnedSite } from "@/lib/domains/sites";
 import {
   createDomain,
   createDomainOrder,
@@ -31,6 +32,12 @@ export async function POST(request: NextRequest) {
   if (!split || !isValidLabel(split.label) || !isSupportedTld(split.tld)) {
     return NextResponse.json({ error: "Unsupported domain" }, { status: 400 });
   }
+
+  const siteAccess = await assertOwnedSite(body.siteId, userId);
+  if (!siteAccess.ok) {
+    return NextResponse.json({ error: siteAccess.error }, { status: siteAccess.status });
+  }
+  const siteId = siteAccess.siteId || null;
 
   // Re-check availability right before charging to minimize race window.
   const avail = await checkDomain(normalized);
@@ -72,7 +79,7 @@ export async function POST(request: NextRequest) {
     firstName: body.ownerContact.name.split(" ")[0],
     lastName: body.ownerContact.name.split(" ").slice(1).join(" ") || body.ownerContact.name,
     callbackUrl: `${origin}/api/webhooks/chapa`,
-    returnUrl: `${origin}/settings/domain?${body.siteId ? `siteId=${body.siteId}&` : ""}order=${order.id}`,
+    returnUrl: `${origin}/settings/domain?${siteId ? `siteId=${siteId}&` : ""}order=${order.id}`,
     customTitle: `Domain: ${normalized}`,
   });
 
@@ -89,7 +96,7 @@ export async function POST(request: NextRequest) {
   const domain = await createDomain({
     name: normalized,
     tld: split.tld,
-    siteId: body.siteId ?? null,
+    siteId,
     userId,
     source: "REGISTERED",
     status: "PENDING",
