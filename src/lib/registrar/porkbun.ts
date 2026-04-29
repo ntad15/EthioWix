@@ -8,6 +8,15 @@ import type {
 } from "./types";
 
 const PORKBUN_BASE = "https://api.porkbun.com/api/json/v3";
+const CHECK_DOMAIN_MIN_INTERVAL_MS = 10_500;
+const CHECK_DOMAIN_CACHE_MS = 10 * 60 * 1000;
+
+const checkDomainCache = new Map<
+  string,
+  { at: number; result: Result<CheckDomainResult> }
+>();
+let checkDomainQueue: Promise<void> = Promise.resolve();
+let lastCheckDomainAt = 0;
 
 function domainPath(domain: string): string {
   return encodeURIComponent(domain.trim().toLowerCase());
@@ -80,20 +89,56 @@ export async function getPricing(): Promise<Result<PricingResponse>> {
   return call<PricingResponse>("/pricing/get");
 }
 
+async function waitForCheckDomainSlot(): Promise<void> {
+  const now = Date.now();
+  const waitMs = Math.max(0, CHECK_DOMAIN_MIN_INTERVAL_MS - (now - lastCheckDomainAt));
+  if (waitMs > 0) {
+    await new Promise((resolve) => setTimeout(resolve, waitMs));
+  }
+  lastCheckDomainAt = Date.now();
+}
+
+async function queuedCheckDomain<T>(fn: () => Promise<T>): Promise<T> {
+  const previous = checkDomainQueue;
+  let release: () => void = () => {};
+  checkDomainQueue = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+
+  await previous;
+  try {
+    await waitForCheckDomainSlot();
+    return await fn();
+  } finally {
+    release();
+  }
+}
+
 export async function checkDomain(domain: string): Promise<Result<CheckDomainResult>> {
-  type Raw = {
+  const normalized = domain.trim().toLowerCase();
+  const cached = checkDomainCache.get(normalized);
+  if (cached && Date.now() - cached.at < CHECK_DOMAIN_CACHE_MS) return cached.result;
+
+type Raw = {
     response: { avail: "yes" | "no"; premium: "yes" | "no"; price?: string };
   };
-  const r = await call<Raw>(`/domain/checkDomain/${domainPath(domain)}`);
-  if (!r.ok) return r;
-  return {
-    ok: true,
-    data: {
-      available: r.data.response.avail === "yes",
-      premium: r.data.response.premium === "yes",
-      priceUsd: r.data.response.price ? Number(r.data.response.price) : undefined,
-    },
-  };
+  const result = await queuedCheckDomain(async (): Promise<Result<CheckDomainResult>> => {
+    const fresh = checkDomainCache.get(normalized);
+    if (fresh && Date.now() - fresh.at < CHECK_DOMAIN_CACHE_MS) return fresh.result;
+
+    const r = await call<Raw>(`/domain/checkDomain/${domainPath(normalized)}`);
+    if (!r.ok) return r;
+    return {
+      ok: true,
+      data: {
+        available: r.data.response.avail === "yes",
+        premium: r.data.response.premium === "yes",
+        priceUsd: r.data.response.price ? Number(r.data.response.price) : undefined,
+      },
+    };
+  });
+  if (result.ok) checkDomainCache.set(normalized, { at: Date.now(), result });
+  return result;
 }
 
 function usdToPennies(usd: number | undefined): number | null {
@@ -105,6 +150,23 @@ function minimumExpiryDate(years = 1): string {
   const d = new Date();
   d.setFullYear(d.getFullYear() + years);
   return d.toISOString();
+}
+
+async function registrationCost(domain: string): Promise<Result<number>> {
+  const pricing = await getPricing();
+  if (!pricing.ok) return pricing;
+
+  const tld = domain.split(".").slice(1).join(".");
+  const registrationUsd = Number(pricing.data.pricing[tld]?.registration);
+  const cost = usdToPennies(registrationUsd);
+  if (cost === null) {
+    return {
+      ok: false,
+      code: "MISSING_COST",
+      message: `Porkbun did not return a registration price for .${tld}`,
+    };
+  }
+  return { ok: true, data: cost };
 }
 
 export async function createDomain(args: CreateDomainArgs): Promise<Result<CreateDomainResult>> {
@@ -125,17 +187,13 @@ export async function createDomain(args: CreateDomainArgs): Promise<Result<Creat
     return { ok: false, code: "PREMIUM_DOMAIN", message: "Premium domains are not supported" };
   }
 
-  const cost = usdToPennies(availability.data.priceUsd);
-  if (cost === null) {
-    return {
-      ok: false,
-      code: "MISSING_COST",
-      message: "Porkbun did not return a registration price for this domain",
-    };
-  }
+  const quotedCost = usdToPennies(availability.data.priceUsd);
+  const cost: Result<number> =
+    quotedCost === null ? await registrationCost(args.domain) : { ok: true, data: quotedCost };
+  if (!cost.ok) return cost;
 
   const r = await call<Raw>(`/domain/create/${domainPath(args.domain)}`, {
-    cost,
+    cost: cost.data,
     agreeToTerms: "yes",
   });
   if (!r.ok) return r;
